@@ -1,5 +1,5 @@
 -- Create database if not exists
-CREATE DATABASE IF NOT EXISTS bullshit_bingo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS bullshit_bingo CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE bullshit_bingo;
 
 -- Events table
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS events (
     code VARCHAR(10) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Words table
 CREATE TABLE IF NOT EXISTS words (
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS words (
     is_custom BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Players table
 CREATE TABLE IF NOT EXISTS players (
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS players (
     player_code VARCHAR(10) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Rounds table
 CREATE TABLE IF NOT EXISTS rounds (
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS rounds (
     event_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Player boards table
 CREATE TABLE IF NOT EXISTS player_boards (
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS player_boards (
     FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Marked words table
 CREATE TABLE IF NOT EXISTS marked_words (
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS marked_words (
     FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- Winners table
 CREATE TABLE IF NOT EXISTS winners (
@@ -72,4 +72,4 @@ CREATE TABLE IF NOT EXISTS winners (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
-); 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci; 

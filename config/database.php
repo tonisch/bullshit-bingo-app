@@ -12,6 +12,6 @@ try {
     if ($config['debug']) {
         die("Connection failed: " . $e->getMessage());
     } else {
-        die("Database connection failed. Please try again later.");
+        die("Connection failed: " . $e->getMessage());
     }
 } 

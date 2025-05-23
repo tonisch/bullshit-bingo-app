@@ -1,6 +1,6 @@
 <?php
 // Load environment-specific configuration
-$env = getenv('APP_ENV') ?: 'local';
+$env = getenv('APP_ENV') ?: 'production';
 $configFile = __DIR__ . "/{$env}.php";
 
 if (!file_exists($configFile)) {

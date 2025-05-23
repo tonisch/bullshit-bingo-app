@@ -1,15 +1,25 @@
 <?php
 session_start();
 
+// Define application root path
+define('APP_ROOT', dirname(__DIR__));
+
+// Autoloader
+spl_autoload_register(function ($class) {
+    $file = APP_ROOT . '/src/' . str_replace('\\', '/', $class) . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
 // Load configuration
-require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../src/utils/Logger.php';
+$config = require_once APP_ROOT . '/config/config.php';
 
 // Initialize logger
-Logger::init($config['environment']);
+\App\Utils\Logger::init($config['environment']);
 
 // Log request
-Logger::info('Request received', [
+\App\Utils\Logger::info('Request received', [
     'method' => $_SERVER['REQUEST_METHOD'],
     'uri' => $_SERVER['REQUEST_URI'],
     'ip' => $_SERVER['REMOTE_ADDR']
@@ -30,32 +40,45 @@ $path = ltrim($path, '/');
 
 // Route the request
 try {
-    if (empty($path)) {
-        // Home page
-        require_once __DIR__ . '/../src/views/home.php';
-    } else if ($path === 'create-event') {
-        // Create event page
-        require_once __DIR__ . '/../src/views/create-event.php';
-    } else if ($path === 'join-event') {
-        // Join event page
-        require_once __DIR__ . '/../src/views/join-event.php';
-    } else if ($path === 'game') {
-        // Game page
-        require_once __DIR__ . '/../src/views/game.php';
-    } else if (strpos($path, 'api/') === 0) {
-        // API endpoints
-        $api_path = __DIR__ . '/../' . $path . '/index.php';
+    $router = new \App\Core\Router();
+    
+    // Define routes
+    $router->get('/', function() {
+        require_once APP_ROOT . '/src/views/home.php';
+    });
+    
+    $router->get('/create-event', function() {
+        require_once APP_ROOT . '/src/views/create-event.php';
+    });
+    
+    $router->get('/join-event', function() {
+        require_once APP_ROOT . '/src/views/join-event.php';
+    });
+    
+    $router->get('/game', function() {
+        require_once APP_ROOT . '/src/views/game.php';
+    });
+    
+    $router->any('/api/*', function($path) {
+        $api_path = APP_ROOT . '/public/' . $path . '/index.php';
         if (file_exists($api_path)) {
             require_once $api_path;
         } else {
-            throw new Exception('API endpoint not found');
+            throw new \App\Exceptions\NotFoundException('API endpoint not found');
         }
-    } else {
-        // 404 page
-        require_once __DIR__ . '/../src/views/404.php';
-    }
-} catch (Exception $e) {
-    Logger::error('Application error', [
+    });
+    
+    // Handle the request
+    $router->dispatch($path);
+    
+} catch (\App\Exceptions\NotFoundException $e) {
+    \App\Utils\Logger::warning('Page not found', [
+        'path' => $path,
+        'message' => $e->getMessage()
+    ]);
+    require_once APP_ROOT . '/src/views/404.php';
+} catch (\Exception $e) {
+    \App\Utils\Logger::error('Application error', [
         'message' => $e->getMessage(),
         'file' => $e->getFile(),
         'line' => $e->getLine(),
@@ -65,6 +88,6 @@ try {
     if ($config['debug']) {
         throw $e;
     } else {
-        require_once __DIR__ . '/../src/views/404.php';
+        require_once APP_ROOT . '/src/views/500.php';
     }
 } 

@@ -136,17 +136,30 @@
             document.getElementById('createEventForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
+                const eventName = document.getElementById('eventName').value.trim();
+                const eventNameInput = document.getElementById('eventName');
+                
+                // Reset previous validation states
+                eventNameInput.classList.remove('is-invalid');
+                wordCountWarning.style.display = 'none';
+                
+                // Validate event name
+                if (!eventName) {
+                    eventNameInput.classList.add('is-invalid');
+                    eventNameInput.focus();
+                    return;
+                }
+                
+                // Validate word count
                 if (selectedWords.size < 24) {
                     wordCountWarning.style.display = 'block';
                     return;
                 }
 
-                const eventName = document.getElementById('eventName').value;
-                if (!eventName) {
-                    return;
-                }
-
                 try {
+                    createEventBtn.disabled = true;
+                    createEventBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+                    
                     const response = await fetch('/api/events', {
                         method: 'POST',
                         headers: {
@@ -160,13 +173,17 @@
 
                     const data = await response.json();
                     if (response.ok) {
-                        window.location.href = `/join-event?id=${data.id}`;
+                        window.location.href = `/join-event?id=${data.eventId}`;
                     } else {
                         alert(data.error || 'Failed to create event');
+                        createEventBtn.disabled = false;
+                        createEventBtn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Event';
                     }
                 } catch (error) {
                     console.error('Error:', error);
                     alert('Failed to create event');
+                    createEventBtn.disabled = false;
+                    createEventBtn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Event';
                 }
             });
 

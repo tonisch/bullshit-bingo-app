@@ -4,13 +4,15 @@ require_once __DIR__ . '/../../../src/controllers/EventController.php';
 
 header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Method not allowed. Only POST requests are accepted.');
+    }
+
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (!isset($data['name']) || !isset($data['words']) || !is_array($data['words'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid request data']);
-        exit;
+        throw new Exception('Invalid request data. Name and words array are required.');
     }
     
     $controller = new EventController();
@@ -19,10 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result['success']) {
         echo json_encode(['eventId' => $result['eventId']]);
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => $result['error']]);
+        throw new Exception($result['error']);
     }
-} else {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+} catch (Exception $e) {
+    http_response_code($e->getMessage() === 'Method not allowed' ? 405 : 400);
+    echo json_encode(['error' => $e->getMessage()]);
 } 

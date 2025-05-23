@@ -1,17 +1,25 @@
 <?php
-try {
-    $dsn = "mysql:host={$config['db']['host']};dbname={$config['db']['database']};charset={$config['db']['charset']}";
-    $options = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ];
+require_once __DIR__ . '/config.php';
 
-    $pdo = new PDO($dsn, $config['db']['username'], $config['db']['password'], $options);
-} catch (PDOException $e) {
-    if ($config['debug']) {
-        die("Connection failed: " . $e->getMessage());
-    } else {
-        die("Connection failed: " . $e->getMessage());
+function getDbConnection() {
+    global $config;
+    
+    try {
+        $dsn = "mysql:host={$config['db']['host']};dbname={$config['db']['database']};charset={$config['db']['charset']}";
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+
+        $pdo = new PDO($dsn, $config['db']['username'], $config['db']['password'], $options);
+        return $pdo;
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+        if ($config['debug']) {
+            throw new Exception("Database connection failed: " . $e->getMessage());
+        } else {
+            throw new Exception("Database connection failed. Please try again later.");
+        }
     }
 } 

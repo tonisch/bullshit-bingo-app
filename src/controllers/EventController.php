@@ -4,11 +4,28 @@ class EventController {
     private $db;
     
     public function __construct() {
-        $this->db = getDbConnection();
+        try {
+            $this->db = getDbConnection();
+        } catch (Exception $e) {
+            error_log("EventController initialization error: " . $e->getMessage());
+            throw $e;
+        }
     }
     
     public function createEvent($name, $words) {
         try {
+            if (empty($name)) {
+                throw new Exception("Event name is required");
+            }
+            
+            if (empty($words) || !is_array($words)) {
+                throw new Exception("Words must be a non-empty array");
+            }
+            
+            if (count($words) < 24) {
+                throw new Exception("At least 24 words are required");
+            }
+            
             $this->db->beginTransaction();
             
             // Generate unique event ID
@@ -43,9 +60,11 @@ class EventController {
             return ['success' => true, 'eventId' => $eventId];
             
         } catch (Exception $e) {
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log("Error creating event: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to create event'];
+            return ['success' => false, 'error' => $e->getMessage()];
         }
     }
 } 

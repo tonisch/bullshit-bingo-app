@@ -1,0 +1,28 @@
+# Configuration files
+config/local.php
+config/production.php
+
+# Environment files
+.env
+.env.*
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+vendor/
+node_modules/
+
+# Cache
+cache/
+*.cache 

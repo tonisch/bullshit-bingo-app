@@ -1,0 +1,75 @@
+-- Create database if not exists
+CREATE DATABASE IF NOT EXISTS bullshit_bingo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE bullshit_bingo;
+
+-- Events table
+CREATE TABLE IF NOT EXISTS events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Words table
+CREATE TABLE IF NOT EXISTS words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    word VARCHAR(255) NOT NULL,
+    is_custom BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
+
+-- Players table
+CREATE TABLE IF NOT EXISTS players (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    player_code VARCHAR(10) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
+
+-- Rounds table
+CREATE TABLE IF NOT EXISTS rounds (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
+
+-- Player boards table
+CREATE TABLE IF NOT EXISTS player_boards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    round_id INT NOT NULL,
+    player_id INT NOT NULL,
+    word_id INT,
+    position INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
+);
+
+-- Marked words table
+CREATE TABLE IF NOT EXISTS marked_words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    round_id INT NOT NULL,
+    player_id INT NOT NULL,
+    word_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
+);
+
+-- Winners table
+CREATE TABLE IF NOT EXISTS winners (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    round_id INT NOT NULL,
+    player_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (round_id) REFERENCES rounds(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+); 

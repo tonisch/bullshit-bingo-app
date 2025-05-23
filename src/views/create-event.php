@@ -32,6 +32,11 @@
 
                             <div class="mb-4">
                                 <label class="form-label">Default Words</label>
+                                <div class="d-flex justify-content-end mb-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="selectAllDefault">
+                                        <i class="bi bi-check-all me-2"></i>Select All
+                                    </button>
+                                </div>
                                 <div class="row g-3" id="defaultWords">
                                     <!-- Default words will be loaded here -->
                                 </div>
@@ -96,6 +101,24 @@
             defaultWords.forEach(word => {
                 const wordElement = createWordElement(word, 'default');
                 defaultWordsContainer.appendChild(wordElement);
+            });
+
+            // Select all default words
+            document.getElementById('selectAllDefault').addEventListener('click', function() {
+                const checkboxes = defaultWordsContainer.querySelectorAll('.word-checkbox');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                
+                checkboxes.forEach(checkbox => {
+                    if (allChecked) {
+                        checkbox.checked = false;
+                        selectedWords.delete(checkbox.value);
+                    } else {
+                        checkbox.checked = true;
+                        selectedWords.add(checkbox.value);
+                    }
+                });
+                
+                updateWordCount();
             });
 
             // Add custom word

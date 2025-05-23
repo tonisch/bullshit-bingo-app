@@ -2,7 +2,6 @@
 session_start();
 
 // Load configuration
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../src/utils/Logger.php';
 
@@ -62,14 +61,10 @@ try {
         'line' => $e->getLine(),
         'trace' => $e->getTraceAsString()
     ]);
+    
     if ($config['debug']) {
         throw $e;
     } else {
         require_once __DIR__ . '/../src/views/404.php';
     }
-}
-
-// Output debug information if enabled
-if ($config['debug']) {
-    echo Debug::render();
 } 

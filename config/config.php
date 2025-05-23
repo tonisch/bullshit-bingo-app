@@ -1,18 +1,19 @@
 <?php
-// Load environment-specific configuration
-$env = getenv('APP_ENV') ?: 'production';
-$configFile = __DIR__ . "/{$env}.php";
+
+// Load environment configuration
+$environment = getenv('APP_ENV') ?: 'local';
+$configFile = __DIR__ . "/{$environment}.php";
 
 if (!file_exists($configFile)) {
-    die("Configuration file for environment '{$env}' not found.");
+    throw new Exception("Configuration file for environment '{$environment}' not found");
 }
 
-require_once $configFile;
+$config = require $configFile;
 
-// Load database configuration
-require_once __DIR__ . '/database.php';
+// Set timezone
+date_default_timezone_set($config['timezone']);
 
-// Set error reporting based on environment
+// Error reporting based on environment
 if ($config['debug']) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
@@ -21,5 +22,4 @@ if ($config['debug']) {
     ini_set('display_errors', 0);
 }
 
-// Set default timezone
-date_default_timezone_set($config['timezone'] ?? 'UTC'); 
+return $config; 

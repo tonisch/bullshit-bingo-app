@@ -6,6 +6,10 @@ config/production.php
 .env
 .env.*
 
+# Log files
+logs/
+*.log
+
 # IDE files
 .idea/
 .vscode/
@@ -15,13 +19,17 @@ config/production.php
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-logs/
-
-# Dependencies
+# Composer
 vendor/
+composer.lock
+
+# Node modules
 node_modules/
+package-lock.json
+
+# Build files
+dist/
+build/
 
 # Cache
 cache/

@@ -6,11 +6,11 @@
  * and adjust the values according to your environment.
  */
 
-$config = [
-    // Application settings
+return [
+    'environment' => 'local', // or 'production'
     'debug' => true, // Set to false in production
     'timezone' => 'Europe/Berlin',
-    'app_url' => 'http://localhost:8000', // Change to your domain in production
+    'app_url' => 'http://' . $_SERVER['HTTP_HOST'], // Change to https:// in production
     'app_name' => 'Bullshit Bingo',
     
     // Database configuration
@@ -25,11 +25,18 @@ $config = [
     
     // WebSocket configuration
     'websocket' => [
-        'host' => 'localhost', // Change to your domain in production
+        'host' => $_SERVER['HTTP_HOST'],
         'port' => 8080,
     ],
 
-    // Optional: Session configuration
+    // Logging configuration
+    'logging' => [
+        'enabled' => true,
+        'level' => 'DEBUG', // DEBUG, INFO, WARNING, ERROR, CRITICAL
+        'max_files' => 30, // Number of days to keep log files
+    ],
+
+    // Session configuration
     'session' => [
         'lifetime' => 120, // Session lifetime in minutes
         'path' => '/',
@@ -38,9 +45,9 @@ $config = [
         'httponly' => true,
     ],
 
-    // Optional: Security settings
+    // Security settings
     'security' => [
-        'allowed_origins' => ['http://localhost:8000'], // Add your domains
+        'allowed_origins' => ['*'], // Add your domains in production
         'cors_headers' => [
             'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',

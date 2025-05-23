@@ -1,82 +1,81 @@
 <?php
 
 class Database {
-    private $pdo;
     private static $instance = null;
-    
-    public function __construct() {
-        global $config;
-        try {
-            $dsn = "mysql:host={$config['db']['host']};dbname={$config['db']['database']};charset={$config['db']['charset']}";
-            $options = [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ];
+    private $pdo;
+    private $config;
 
-            // Log connection attempt if debug is enabled
-            if ($config['debug']) {
-                Debug::log("Attempting database connection to: {$config['db']['host']}", 'debug');
-            }
-
-            $this->pdo = new PDO($dsn, $config['db']['username'], $config['db']['password'], $options);
-            
-            if ($config['debug']) {
-                Debug::log("Database connection successful", 'info');
-            }
-        } catch (PDOException $e) {
-            if ($config['debug']) {
-                $error = "Database connection failed: " . $e->getMessage() . "\n";
-                $error .= "DSN: " . $dsn . "\n";
-                $error .= "Username: " . $config['db']['username'] . "\n";
-                $error .= "Error Code: " . $e->getCode();
-                Debug::log($error, 'error');
-                die($error);
-            } else {
-                die("Database connection failed. Please try again later.");
-            }
-        }
+    private function __construct($config) {
+        $this->config = $config;
+        $this->connect();
     }
-    
-    public static function getInstance() {
+
+    public static function getInstance($config) {
         if (self::$instance === null) {
-            self::$instance = new self();
+            self::$instance = new self($config);
         }
         return self::$instance;
     }
-    
-    public function query($sql, $params = []) {
+
+    private function connect() {
         try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
+            $dsn = "mysql:host={$this->config['host']};dbname={$this->config['database']};charset={$this->config['charset']}";
+            
+            Logger::info('Attempting database connection', [
+                'host' => $this->config['host'],
+                'database' => $this->config['database']
+            ]);
 
-            // Log query if debug is enabled
-            if (isset($GLOBALS['config']['debug']) && $GLOBALS['config']['debug']) {
-                $query = $sql;
-                foreach ($params as $key => $value) {
-                    $query = str_replace($key, "'" . $value . "'", $query);
-                }
-                if (!isset($GLOBALS['db_queries'])) {
-                    $GLOBALS['db_queries'] = [];
-                }
-                $GLOBALS['db_queries'][] = $query;
-            }
+            $this->pdo = new PDO($dsn, $this->config['username'], $this->config['password'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
 
-            return $stmt;
+            Logger::info('Database connection successful');
         } catch (PDOException $e) {
-            if (isset($GLOBALS['config']['debug']) && $GLOBALS['config']['debug']) {
-                $error = "Database error: " . $e->getMessage() . "\n";
-                $error .= "SQL: " . $sql . "\n";
-                $error .= "Params: " . print_r($params, true);
-                Debug::log($error, 'error');
-                throw $e;
-            } else {
-                die("Database error occurred. Please try again later.");
-            }
+            Logger::error('Database connection failed', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            throw new Exception('Database connection failed. Please try again later.');
         }
     }
-    
+
+    public function query($sql, $params = []) {
+        try {
+            Logger::debug('Executing SQL query', [
+                'sql' => $sql,
+                'params' => $params
+            ]);
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt;
+        } catch (PDOException $e) {
+            Logger::error('SQL query failed', [
+                'sql' => $sql,
+                'params' => $params,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            throw new Exception('Database query failed. Please try again later.');
+        }
+    }
+
     public function lastInsertId() {
         return $this->pdo->lastInsertId();
+    }
+
+    public function beginTransaction() {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit() {
+        return $this->pdo->commit();
+    }
+
+    public function rollBack() {
+        return $this->pdo->rollBack();
     }
 } 

@@ -4,13 +4,17 @@ session_start();
 // Load configuration
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../src/utils/Debug.php';
+require_once __DIR__ . '/../src/utils/Logger.php';
 
-// Initialize debug
-Debug::init();
+// Initialize logger
+Logger::init($config['environment']);
 
-// Log the request
-Debug::log("Request: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
+// Log request
+Logger::info('Request received', [
+    'method' => $_SERVER['REQUEST_METHOD'],
+    'uri' => $_SERVER['REQUEST_URI'],
+    'ip' => $_SERVER['REMOTE_ADDR']
+]);
 
 // Get the requested path
 $request_uri = $_SERVER['REQUEST_URI'];
@@ -52,7 +56,12 @@ try {
         require_once __DIR__ . '/../src/views/404.php';
     }
 } catch (Exception $e) {
-    Debug::log($e->getMessage(), 'error');
+    Logger::error('Application error', [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString()
+    ]);
     if ($config['debug']) {
         throw $e;
     } else {

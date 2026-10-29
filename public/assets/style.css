@@ -91,8 +91,8 @@ p { margin: 0 0 12px; }
   gap: 14px;
   text-decoration: none;
 }
-.brand-logo {
-  height: 34px;
+.brand-mark {
+  height: 30px;
   width: auto;
   display: block;
 }
@@ -723,7 +723,7 @@ input[type="text"]:focus, textarea:focus, select:focus {
   .wrap { padding: 22px 14px 44px; }
   .foot { padding: 0 14px 28px; }
   .brand { gap: 10px; }
-  .brand-logo { height: 27px; }
+  .brand-mark { height: 24px; }
   .brand-sep { display: none; }
   .brand-name { font-size: 1.05rem; }
   .steps { grid-template-columns: 1fr; margin-top: 32px; }

@@ -20,7 +20,8 @@ $langNow = lang_current();
 <meta name="color-scheme" content="light">
 <meta name="csrf" content="<?= h($csrf) ?>">
 <title><?= h($title ?? 'Bullshit Bingo') ?></title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%23005a9d'/><g fill='%23ffffff'><rect x='15' y='15' width='16' height='16' rx='2'/><rect x='42' y='15' width='16' height='16' rx='2'/><rect x='69' y='15' width='16' height='16' rx='2'/><rect x='15' y='42' width='16' height='16' rx='2'/><rect x='42' y='42' width='16' height='16' rx='2'/><rect x='69' y='42' width='16' height='16' rx='2'/><rect x='15' y='69' width='16' height='16' rx='2'/><rect x='69' y='69' width='16' height='16' rx='2'/></g></svg>">
+<link rel="icon" type="image/png" href="/assets/img/favicon-tonisch.png">
+<link rel="apple-touch-icon" href="/assets/img/favicon-tonisch.png">
 <link rel="preload" href="/assets/fonts/fraunces-latin-full-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-tight-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= h($asset('/assets/fonts.css')) ?>">
@@ -30,8 +31,8 @@ $langNow = lang_current();
 
 <header class="topbar">
   <a class="brand" href="/" aria-label="Bullshit Bingo – Startseite">
-    <img class="brand-logo" src="/assets/img/logo-tonisch.gif" width="257" height="64"
-         alt="Anton Scheib – Diplom Wirtschaftsingenieur">
+    <img class="brand-mark" src="/assets/img/mark-tonisch.png" width="80" height="64"
+         alt="tonisch.de">
     <span class="brand-sep" aria-hidden="true"></span>
     <span class="brand-name">Bullshit<em>Bingo</em></span>
   </a>

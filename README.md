@@ -70,7 +70,8 @@ app/
   views/          Layout + Seiten
 public/           Document Root (index.php = Front-Controller, assets/)
   assets/fonts/   Fraunces, Inter Tight, Inter (woff2, self-hosted)
-  assets/img/     logo-tonisch.gif (Original von tonisch.de, Blau #005a9d)
+  assets/img/     mark-tonisch.png (Pfeil aus dem tonisch.de-Logo, freigestellt),
+                  favicon-tonisch.png
 bin/
   test.php        End-to-End-Test der Spiellogik ohne Webserver
   console.php     Spiele auflisten / löschen / aufräumen

@@ -29,7 +29,12 @@ $langNow = lang_current();
 <body data-page="<?= h($page ?? '') ?>" class="<?= h($bodyClass ?? '') ?>">
 
 <header class="topbar">
-  <a class="brand" href="/">Bullshit<em>Bingo</em></a>
+  <a class="brand" href="/" aria-label="Bullshit Bingo – Startseite">
+    <img class="brand-logo" src="/assets/img/logo-tonisch.gif" width="257" height="64"
+         alt="Anton Scheib – Diplom Wirtschaftsingenieur">
+    <span class="brand-sep" aria-hidden="true"></span>
+    <span class="brand-name">Bullshit<em>Bingo</em></span>
+  </a>
   <div class="topbar-right">
     <?php if (!empty($navRight)): ?>
       <span class="nav-extra"><?= $navRight ?></span>

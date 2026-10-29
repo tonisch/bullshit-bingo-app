@@ -1,176 +1,106 @@
-# Bullshit Bingo Generator
+# Bullshit Bingo
 
-A web-based Bullshit Bingo game with real-time updates, QR code invitations, and customizable word lists.
+Party-Bingo mit eigenen Begriffen: Host legt ein Spiel an, verteilt Code oder QR, alle
+spielen auf dem Handy. Wer zuerst eine Reihe vollhat, drückt BINGO – der Server prüft.
 
-## Features
+Läuft auf dem All-Inkl-Webspace unter <https://bingo.tonisch.de>.
+Kein Framework, kein Build, keine externen Requests. PHP 8 + SQLite + Vanilla JS.
 
-- Create custom Bingo events with your own word lists
-- Generate QR codes for easy game joining
-- Real-time updates for winners
-- Multiple rounds support
-- Responsive design for all devices
+## Wie es funktioniert
 
-## Requirements
+1. **Spiel anlegen** (`/neu`): Titel, Begriffe (eine pro Zeile), Raster 3×3 / 4×4 / 5×5,
+   optional freies Mittelfeld. Ergebnis: Spielcode + Host-Link mit Admin-Token.
+2. **Beitreten** (`/beitreten`): Code + Name. Jede:r bekommt eine eigene, gemischte Karte
+   (bei mehr Begriffen als Feldern ist jede Karte anders).
+3. **Spielen** (`/karte`): Feld antippen, wenn der Begriff gefallen ist.
+4. **BINGO**: Server prüft Reihen/Spalten/Diagonalen, trägt den Sieg mit Zeitstempel ein.
+5. **Host-Ansicht** (`/host/<token>`): Beamer-taugliche Liste mit Fortschritt pro Person,
+   Bingos der laufenden Runde, Vollbild-Flash bei Sieg. Buttons: Start, Neue Runde, Beenden.
 
-- PHP 7.4 or higher
-- MySQL/MariaDB
-- Web server (Apache/Nginx)
-- WebSocket server (for real-time updates)
+„Neue Runde" mischt alle Karten neu und löscht die Markierungen; Siege bleiben in der
+Historie erhalten.
 
-## Installation
+## Wortlisten
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/bullshit-bingo-app.git
-cd bullshit-bingo-app
+`app/wordlists.php` enthält vier Presets, die auf `/neu` als Chips erscheinen:
+
+| ID | Liste | Begriffe | Inhalt |
+|----|-------|----------|--------|
+| `automotive` | Automotive Management | 40 | ASPICE, ISO 26262, SOP, Lenkungskreis, Change Board |
+| `meeting` | Meeting-Bingo | 30 | Klassiker aus jedem Jour fixe |
+| `quality` | Qualität & Zulieferer | 28 | 8D, PPAP, Feldrückläufer, Cpk |
+| `tech` | Technik (light) | 24 | OTA, DTC, AUTOSAR, Prüfstand |
+
+Ein Klick ergänzt die Begriffe im Textfeld, Dubletten werden übersprungen; mehrere
+Listen lassen sich kombinieren. Neue Listen sind einfach weitere Einträge in
+`wordlist_packs()`.
+
+## Realtime
+
+Kein WebSocket – Shared Hosting kann keine Daemons halten. Der Client pollt
+`/api/status` alle 2,5 s (`poll_ms` in `app/bootstrap.php`). Das trägt bei 15–30
+Spieler:innen problemlos; bei deutlich mehr Teilnehmenden das Intervall erhöhen.
+
+## Aufbau
+
+```
+app/
+  bootstrap.php   Konfiguration, Session, Fehlerbehandlung
+  helpers.php     Ausgabe-Escaping, CSRF, Zufallscodes, View-Rendering
+  wordlists.php   Preset-Wortlisten für /neu
+  db.php          PDO-SQLite + Schema (CREATE TABLE IF NOT EXISTS)
+  game.php        Spiellogik: anlegen, beitreten, markieren, Bingo prüfen, Runden
+  views/          Layout + Seiten
+public/           Document Root (index.php = Front-Controller, assets/)
+bin/
+  test.php        End-to-End-Test der Spiellogik ohne Webserver
+  console.php     Spiele auflisten / löschen / aufräumen
+var/bingo.sqlite  Datenbank (außerhalb des Document Root)
 ```
 
-2. Create the database:
-```sql
-CREATE DATABASE bullshit_bingo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+## Datenmodell
 
-3. Import the database schema:
-```bash
-mysql -u your_username -p bullshit_bingo < database/schema.sql
-```
+| Tabelle   | Inhalt |
+|-----------|--------|
+| `games`   | Spielcode, Admin-Token, Titel, Raster, Status (`lobby`/`running`/`finished`), Runde |
+| `terms`   | Begriffe eines Spiels |
+| `players` | Name, Karte als JSON-Array von Term-IDs (`0` = freies Feld) |
+| `marks`   | markierte Felder pro Spieler:in (Zellindex) |
+| `wins`    | gewertete Linien (Typ row/col/diag + Index), eindeutig pro Runde |
 
-4. Configure the application:
-   - Copy `config/config.example.php` to `config/local.php`
-   - Adjust the settings in `config/local.php` to match your environment
-   - Make sure the database credentials are correct
+## Sicherheit
 
-## Configuration
+- Admin-Zugriff nur über 48-stelliges Token in der URL (nicht ratbar, nicht im Code).
+- CSRF-Token für alle Formulare und JSON-POSTs (`X-CSRF`-Header).
+- Beitritts-Limit: max. 120 Spieler:innen pro Spiel, 25 Beitritte pro IP / 10 Minuten.
+- Bingo wird serverseitig gegen die eigene Karte geprüft; doppelte Linien zählen einmal.
+- SQLite-Datei liegt in `var/`, außerhalb von `public/`.
 
-### Environment Setup
-
-The application uses environment-specific configuration files. To set up a new environment:
-
-1. Copy `config/config.example.php` to a new file named after your environment (e.g., `config/local.php` for local development)
-2. Adjust the settings according to your environment
-
-### Configuration Options
-
-#### Basic Settings
-```php
-'debug' => true,           // Set to false in production
-'timezone' => 'Europe/Berlin',
-'app_url' => 'http://localhost:8000',
-'app_name' => 'Bullshit Bingo',
-```
-
-#### Database Configuration
-```php
-'db' => [
-    'host' => 'localhost',
-    'database' => 'bullshit_bingo',
-    'username' => 'your_username',
-    'password' => 'your_password',
-    'charset' => 'utf8mb4',
-    'collation' => 'utf8mb4_unicode_ci',
-],
-```
-
-#### WebSocket Configuration
-```php
-'websocket' => [
-    'host' => 'localhost',
-    'port' => 8080,
-],
-```
-
-#### Security Settings
-```php
-'security' => [
-    'allowed_origins' => ['http://localhost:8000'],
-    'cors_headers' => [
-        'Access-Control-Allow-Origin' => '*',
-        'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
-    ],
-],
-```
-
-### Production Configuration
-
-For production environments:
-
-1. Create `config/production.php` based on `config/config.example.php`
-2. Set `debug` to `false`
-3. Update `app_url` to your production domain
-4. Configure secure database credentials
-5. Set appropriate CORS and security settings
-6. Enable secure session settings:
-```php
-'session' => [
-    'secure' => true,
-    'domain' => 'your-domain.com',
-],
-```
-
-## Development
-
-### Local Development
-
-1. Set up your local web server to point to the `public` directory
-2. Configure your database in `config/local.php`
-3. Start the WebSocket server:
-```bash
-php bin/websocket-server.php
-```
-
-### Running Tests
+## Entwicklung
 
 ```bash
-php vendor/bin/phpunit
+php bin/test.php          # Spiellogik durchtesten (eigene Wegwerf-DB)
+php -S localhost:8000 -t public   # lokal spielen
 ```
+
+Für lokale Tests eine andere DB nutzen: `BINGO_DB=/tmp/bingo.sqlite php -S …`
 
 ## Deployment
 
-1. Set up your production environment configuration
-2. Configure your web server (Apache/Nginx)
-3. Set up SSL certificates
-4. Configure the WebSocket server
-5. Set up database backups
-
-## Security Considerations
-
-- Never commit sensitive configuration files
-- Use strong passwords for database access
-- Enable SSL in production
-- Configure proper CORS settings
-- Set appropriate file permissions
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Directory Structure
-
+```bash
+rsync -az --exclude 'var/' ./ tonisch.de:'~/www/htdocs/w01a1fd3/bingo.tonisch.de/'
 ```
-public_html/ (or www/ or htdocs/)
-├── css/
-│   └── style.css
-├── .htaccess
-└── index.php
-src/
-├── controllers/
-├── models/
-└── views/
-    ├── home.php
-    ├── create-event.php
-    ├── join-event.php
-    └── 404.php
-config/
-├── config.example.php
-├── local.php (not included in Git repository)
-└── database.php
-``` 
+
+Document Root der Domain ist `bingo.tonisch.de/public`. PHP läuft als Account-User,
+`var/` braucht also keine Sonderrechte.
+
+## Verwaltung
+
+```bash
+php bin/console.php list
+php bin/console.php delete ABC123
+php bin/console.php cleanup 30
+```
+
+Backup: einfach `var/bingo.sqlite` kopieren (im WAL-Modus zusätzlich `-wal`/`-shm`
+oder vorher `PRAGMA wal_checkpoint(TRUNCATE)`).

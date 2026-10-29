@@ -1,36 +1,5 @@
-# Configuration files
-config/local.php
-config/production.php
-
-# Environment files
+/var/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 .env
-.env.*
-
-# Log files
-logs/
-*.log
-
-# IDE files
-.idea/
-.vscode/
-*.sublime-*
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Composer
-vendor/
-composer.lock
-
-# Node modules
-node_modules/
-package-lock.json
-
-# Build files
-dist/
-build/
-
-# Cache
-cache/
-*.cache 

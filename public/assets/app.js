@@ -222,7 +222,7 @@
     var firstRender = true;
 
     function joinUrl() {
-      return location.origin + '/beitreten?code=' + encodeURIComponent(APP.code);
+      return location.origin + '/join/' + encodeURIComponent(APP.code);
     }
 
     function paintQr() {
@@ -247,6 +247,30 @@
       flash.hidden = false;
       setTimeout(function () { flash.hidden = true; }, 2600);
     }
+
+    function copyLink() {
+      var url = joinUrl();
+      function done() { toast(T('host.link_copied'), 'ok'); }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(ta);
+        toast(ok ? T('host.link_copied') : T('host.copy_failed'), ok ? 'ok' : 'error');
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(done, fallback);
+      } else {
+        fallback();
+      }
+    }
+
+    on(byId('copyLink'), 'click', copyLink);
 
     function renderPlayers(players) {
       if (!tbody) return;

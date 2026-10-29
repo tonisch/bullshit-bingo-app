@@ -49,6 +49,11 @@ function dispatch(string $method, string $path): void
         redirect($back);
     }
 
+    // Kurz-Deeplink: /join/ABC123 -> Beitrittsformular mit vorausgefülltem Code
+    if (preg_match('#^/join/([A-Za-z0-9]{4,10})$#', $path, $m) && $method === 'GET') {
+        redirect('/beitreten?code=' . urlencode(strtoupper($m[1])));
+    }
+
     if ($path === '/neu' && $method === 'GET') {
         view('create', ['title' => 'Neues Spiel anlegen', 'packs' => wordlist_packs()]);
         return;

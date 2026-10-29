@@ -77,7 +77,11 @@ function i18n_dictionary(): array
         'host.col_bingos'     => 'Bingos',
         'host.empty'          => 'Noch niemand dabei. Code oder QR teilen.',
         'host.no_wins'        => 'Noch kein Bingo.',
-        'host.win_flash'      => '{name} hat BINGO!',
+        'host.copy_link'      => 'Link kopieren',
+        'host.link_copied'    => 'Link kopiert – verteilen!',
+        'host.copy_failed'    => 'Kopieren blockiert – Link bitte manuell markieren.',
+        'host.flash_kicker'   => 'Bullshit Bingo!',
+        'host.win_flash'      => '{name} hat gewonnen!',
 
         // Status
         'status.lobby'        => 'Warteraum',
@@ -123,8 +127,8 @@ function i18n_dictionary(): array
         // JS
         'js.not_running'      => 'Das Spiel läuft noch nicht.',
         'js.new_round'        => 'Neue Runde – neue Karte!',
-        'js.bingo_ok'         => 'BINGO! Der Host sieht dich jetzt.',
-        'js.bingo_other'      => '{name} hat BINGO!',
+        'js.bingo_ok'         => 'Bullshit Bingo! Der Host sieht dich jetzt.',
+        'js.bingo_other'      => '{name} hat Bullshit Bingo!',
         'js.session_expired'  => 'Sitzung abgelaufen, bitte neu laden.',
         'js.error'            => 'Da ist etwas schiefgelaufen.',
 
@@ -196,7 +200,11 @@ function i18n_dictionary(): array
         'host.col_bingos'     => 'Bingos',
         'host.empty'          => 'Nobody here yet. Share the code or QR.',
         'host.no_wins'        => 'No bingo yet.',
-        'host.win_flash'      => '{name} got BINGO!',
+        'host.copy_link'      => 'Copy link',
+        'host.link_copied'    => 'Link copied – spread it!',
+        'host.copy_failed'    => 'Copy blocked – please select the link manually.',
+        'host.flash_kicker'   => 'Bullshit Bingo!',
+        'host.win_flash'      => '{name} is the winner!',
 
         'status.lobby'        => 'lobby',
         'status.running'      => 'running',
@@ -238,8 +246,8 @@ function i18n_dictionary(): array
 
         'js.not_running'      => "The game hasn't started yet.",
         'js.new_round'        => 'New round – new card!',
-        'js.bingo_ok'         => 'BINGO! The host sees you now.',
-        'js.bingo_other'      => '{name} got BINGO!',
+        'js.bingo_ok'         => 'Bullshit Bingo! The host sees you now.',
+        'js.bingo_other'      => '{name} got Bullshit Bingo!',
         'js.session_expired'  => 'Session expired, please reload.',
         'js.error'            => 'Something went wrong.',
 

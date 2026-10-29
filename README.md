@@ -10,8 +10,10 @@ Kein Framework, kein Build, keine externen Requests. PHP 8 + SQLite + Vanilla JS
 
 1. **Spiel anlegen** (`/neu`): Titel, Begriffe (eine pro Zeile), Raster 3×3 / 4×4 / 5×5,
    optional freies Mittelfeld. Ergebnis: Spielcode + Host-Link mit Admin-Token.
-2. **Beitreten** (`/beitreten`): Code + Name. Jede:r bekommt eine eigene, gemischte Karte
-   (bei mehr Begriffen als Feldern ist jede Karte anders).
+2. **Beitreten** (`/beitreten` oder Deeplink `/join/CODE`): Code + Name. Jede:r bekommt
+   eine eigene, gemischte Karte (bei mehr Begriffen als Feldern ist jede Karte anders).
+   Die Host-Ansicht zeigt QR, den Deeplink als Text und einen „Link kopieren"-Button –
+   QR, Textlink und kopierter Link sind identisch.
 3. **Spielen** (`/karte`): Feld antippen, wenn der Begriff gefallen ist.
 4. **BINGO**: Server prüft Reihen/Spalten/Diagonalen, trägt den Sieg mit Zeitstempel ein.
 5. **Host-Ansicht** (`/host/<token>`): Beamer-taugliche Liste mit Fortschritt pro Person,

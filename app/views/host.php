@@ -27,7 +27,8 @@ $appConfig = [
     </div>
     <div class="qr-box">
       <div id="qrCode" class="qr" aria-hidden="true"></div>
-      <div class="qr-url" id="joinUrl"></div>
+      <a class="qr-url" id="joinUrl" href="/join/<?= h($game['code']) ?>"></a>
+      <button type="button" class="btn btn-small" id="copyLink"><?= h(t('host.copy_link')) ?></button>
     </div>
   </header>
 
@@ -96,7 +97,7 @@ $appConfig = [
 
   <div class="flash-overlay" id="winFlash" hidden>
     <div class="flash-inner">
-      <span class="flash-kicker"><?= h(t('card.bingo')) ?></span>
+      <span class="flash-kicker"><?= h(t('host.flash_kicker')) ?></span>
       <strong id="winFlashName"></strong>
     </div>
   </div>

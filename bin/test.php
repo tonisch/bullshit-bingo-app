@@ -163,6 +163,12 @@ foreach (wordlist_packs() as $packId => $pack) {
     check($packId . ' lässt sich als 5x5 anlegen', $created['terms'] === count($unique), (string) $created['terms']);
 }
 
+echo "Frontend-Invarianten\n";
+$css = file_get_contents(APP_ROOT . '/public/assets/style.css');
+$layout = file_get_contents(APP_ROOT . '/app/views/layout.php');
+check('style.css schützt das hidden-Attribut', strpos($css, '[hidden] { display: none !important') !== false);
+check('qrcode.js hängt an appConfig.page (nicht an $page)', strpos($layout, "\$appPage === 'host'") !== false && strpos($layout, "(\$page ?? '')") === false);
+
 @unlink(getenv('BINGO_DB'));
 
 echo "\n" . ($failures === 0 ? "Alle Tests bestanden.\n" : "{$failures} Test(s) fehlgeschlagen.\n");

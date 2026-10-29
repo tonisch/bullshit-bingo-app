@@ -30,6 +30,12 @@
 
 * { box-sizing: border-box; }
 
+/* Das hidden-Attribut muss immer gelten: Ohne diese Regel würde jede eigene
+   display-Angabe (z. B. .flash-overlay { display: grid }) das Attribut
+   überstimmen und das Overlay würde dauerhaft sichtbar bleiben. */
+[hidden] { display: none !important; }
+
+
 html, body { margin: 0; padding: 0; }
 
 body {

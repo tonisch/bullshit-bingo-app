@@ -342,6 +342,50 @@ function record_bingo(array $game, array $player): array
     ];
 }
 
+// -------------------------------------------------------------- Aufräumen
+
+/**
+ * Löscht Spiele (und per Cascade deren Begriffe, Spieler, Markierungen, Siege),
+ * die älter als $days Tage sind – unabhängig vom Status, ein 3 Tage altes
+ * "running"-Spiel ist genauso tot wie ein Warteraum.
+ */
+function games_cleanup(int $days): int
+{
+    $days = max(1, $days);
+    $limit = date('Y-m-d H:i:s', time() - $days * 86400);
+    $stmt = db()->prepare('DELETE FROM games WHERE created_at < ?');
+    $stmt->execute([$limit]);
+    return $stmt->rowCount();
+}
+
+/**
+ * Faule Aufräumung ohne Cron: Web-Requests prüfen höchstens alle
+ * `cleanup_every` Sekunden anhand einer Marker-Datei und löschen dann Spiele
+ * älter als `cleanup_days` Tage. Zwei gleichzeitige Requests können doppelt
+ * laufen – der DELETE ist idempotent, das ist harmlos.
+ */
+function games_auto_cleanup(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+
+    $marker = VAR_DIR . '/last-cleanup';
+    $last = @filemtime($marker);
+    if ($last !== false && time() - $last < (int) cfg('cleanup_every', 3600)) {
+        return;
+    }
+    @touch($marker);
+
+    try {
+        games_cleanup((int) cfg('cleanup_days', 3));
+    } catch (Throwable $e) {
+        error_log('bingo cleanup: ' . $e->getMessage());
+    }
+}
+
 // ------------------------------------------------------------------ Host
 
 function host_action(array $game, string $action): array

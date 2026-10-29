@@ -124,8 +124,20 @@ Document Root der Domain ist `bingo.tonisch.de/public`. PHP läuft als Account-U
 ```bash
 php bin/console.php list
 php bin/console.php delete ABC123
-php bin/console.php cleanup 30
+php bin/console.php cleanup 3
 ```
+
+## Automatische Aufräumung
+
+Alte Spiele verschwinden nach **3 Tagen** – unabhängig vom Status, ein verwaistes
+„running"-Spiel ist genauso tot wie ein Warteraum. Veto per Kaskade: Begriffe,
+Spieler, Markierungen und Siege werden mitgelöscht.
+
+Shared Hosting hat keinen verlässlichen Cron, daher räumt die App **lazy** auf:
+Web-Requests prüfen höchstens einmal pro Stunde (Marker-Datei `var/last-cleanup`)
+und löschen dann alles Ältere. Einstellbar in `app/bootstrap.php`
+(`cleanup_days`, `cleanup_every`). Die CLI-Variante `cleanup` bleibt für manuelle
+Aufrufe.
 
 Backup: einfach `var/bingo.sqlite` kopieren (im WAL-Modus zusätzlich `-wal`/`-shm`
 oder vorher `PRAGMA wal_checkpoint(TRUNCATE)`).

@@ -163,6 +163,28 @@ foreach (wordlist_packs() as $packId => $pack) {
     check($packId . ' lässt sich als 5x5 anlegen', $created['terms'] === count($unique), (string) $created['terms']);
 }
 
+echo "Aufräum-Logik (3 Tage)\n";
+$old = game_create('Altes Spiel', $terms, 3, false);
+$oldId = (int) game_by_code($old['code'])['id'];
+db()->prepare("UPDATE games SET created_at = ? WHERE id = ?")
+    ->execute([date('Y-m-d H:i:s', time() - 4 * 86400), $oldId]);
+
+$fresh = game_create('Frisches Spiel', $terms, 3, false);
+$freshCode = $fresh['code'];
+
+// Auch ein "running"-Spiel muss nach 3 Tagen verschwinden
+$stale = game_create('Verwaist', $terms, 3, false);
+$staleId = (int) game_by_code($stale['code'])['id'];
+db()->prepare("UPDATE games SET created_at = ?, status = 'running' WHERE id = ?")
+    ->execute([date('Y-m-d H:i:s', time() - 3 * 86400 - 3600), $staleId]);
+
+$deleted = games_cleanup(3);
+check('Zwei alte Spiele gelöscht', $deleted === 2, (string) $deleted);
+check('Altes Spiel weg', game_by_code($old['code']) === null);
+check('Verwaistes running-Spiel weg', game_by_code($stale['code']) === null);
+check('Frisches Spiel bleibt', game_by_code($freshCode) !== null);
+db()->prepare('DELETE FROM games WHERE code = ?')->execute([$freshCode]);
+
 echo "Frontend-Invarianten\n";
 $css = file_get_contents(APP_ROOT . '/public/assets/style.css');
 $layout = file_get_contents(APP_ROOT . '/app/views/layout.php');

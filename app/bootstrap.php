@@ -8,10 +8,12 @@ define('DB_FILE', getenv('BINGO_DB') ?: (VAR_DIR . '/bingo.sqlite'));
 date_default_timezone_set('Europe/Berlin');
 
 $GLOBALS['CFG'] = [
-    'app_name'    => 'Bullshit Bingo',
-    'max_players' => 120,
-    'poll_ms'     => 2500,
-    'debug'       => false,
+    'app_name'      => 'Bullshit Bingo',
+    'max_players'   => 120,
+    'poll_ms'       => 2500,
+    'cleanup_days'  => 3,      // Spiele älter als N Tage fliegen raus
+    'cleanup_every' => 3600,   // Aufräum-Check höchstens alle N Sekunden
+    'debug'         => false,
 ];
 
 require APP_ROOT . '/app/helpers.php';
@@ -44,3 +46,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 db_init();
+
+if (PHP_SAPI !== 'cli') {
+    games_auto_cleanup();
+}

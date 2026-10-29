@@ -4,7 +4,7 @@
  *
  *   php bin/console.php list
  *   php bin/console.php delete ABC123
- *   php bin/console.php cleanup 30     (löscht Spiele, die älter als 30 Tage sind)
+ *   php bin/console.php cleanup 3      (löscht Spiele, die älter als 3 Tage sind)
  */
 declare(strict_types=1);
 
@@ -53,11 +53,9 @@ if ($cmd === 'delete') {
 }
 
 if ($cmd === 'cleanup') {
-    $days = max(1, (int) ($argv[2] ?? 30));
-    $limit = date('Y-m-d H:i:s', time() - $days * 86400);
-    $stmt = $pdo->prepare("DELETE FROM games WHERE created_at < ? AND status != 'running'");
-    $stmt->execute([$limit]);
-    printf("%d Spiele älter als %d Tage gelöscht.\n", $stmt->rowCount(), $days);
+    $days = max(1, (int) ($argv[2] ?? 3));
+    $deleted = games_cleanup($days);
+    printf("%d Spiele älter als %d Tage gelöscht.\n", $deleted, $days);
     exit(0);
 }
 

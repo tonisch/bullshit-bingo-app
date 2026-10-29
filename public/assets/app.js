@@ -400,12 +400,18 @@
       paintMarks();
     }
 
+    var lastNotRunningToast = 0;
     on(board, 'click', function (event) {
       var cell = event.target.closest('.cell');
       if (!cell || cell.classList.contains('cell-free')) return;
 
       if (status !== 'running') {
-        toast(T('js.not_running'));
+        // Nicht bei jedem Tipp spammen – höchstens alle 6 s ein Hinweis.
+        var ts = Date.now();
+        if (ts - lastNotRunningToast > 6000) {
+          lastNotRunningToast = ts;
+          toast(T('js.not_running'));
+        }
         return;
       }
 
@@ -449,6 +455,7 @@
 
     var lastCardJson = '';
     var lastWinKey = '';
+    var firstPoll = true;
     function loop() {
       requestJson('/api/status?code=' + encodeURIComponent(APP.code))
         .then(function (data) {
@@ -460,7 +467,7 @@
             var rn = byId('roundNum');
             if (rn) rn.textContent = round;
             marks = [];
-            toast(T('js.new_round'), 'ok');
+            if (!firstPoll) toast(T('js.new_round'), 'ok');
           }
 
           if (data.me) {
@@ -478,11 +485,14 @@
           if (wins.length) {
             var last = wins[wins.length - 1];
             var key = last.name + last.round + last.type + last.index;
+            // Nur neu gewonnene Bingos melden – nicht die beim Seitenaufruf
+            // bereits vorhandenen (sonst toast nach jedem Reload).
             if (key !== lastWinKey) {
+              if (!firstPoll) toast(T('js.bingo_other', { name: last.name }), 'ok');
               lastWinKey = key;
-              toast(T('js.bingo_other', { name: last.name }), 'ok');
             }
           }
+          firstPoll = false;
         })
         .catch(function () { /* still */ })
         .then(function () { setTimeout(loop, pollMs); });

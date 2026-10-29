@@ -11,6 +11,7 @@ $asset = function (string $path): string {
 
 $appJson = ($appConfig ?? []) + ['i18n' => i18n_js(), 'lang' => lang_current()];
 $langNow = lang_current();
+$appPage = $appConfig['page'] ?? '';
 ?>
 <!doctype html>
 <html lang="<?= h($langNow) ?>">
@@ -27,7 +28,7 @@ $langNow = lang_current();
 <link rel="stylesheet" href="<?= h($asset('/assets/fonts.css')) ?>">
 <link rel="stylesheet" href="<?= h($asset('/assets/style.css')) ?>">
 </head>
-<body data-page="<?= h($page ?? '') ?>" class="<?= h($bodyClass ?? '') ?>">
+<body data-page="<?= h($appPage) ?>" class="<?= h($bodyClass ?? '') ?>">
 
 <header class="topbar">
   <a class="brand" href="/" aria-label="Bullshit Bingo – Startseite">
@@ -57,7 +58,7 @@ $langNow = lang_current();
 <script>
 window.APP = <?= json_encode($appJson, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 </script>
-<?php if (($page ?? '') === 'host'): ?>
+<?php if ($appPage === 'host'): ?>
 <script src="<?= h($asset('/assets/qrcode.js')) ?>"></script>
 <?php endif; ?>
 <script src="<?= h($asset('/assets/app.js')) ?>"></script>

@@ -159,9 +159,13 @@ function dispatch(string $method, string $path): void
 
         $cell = (int) ($payload['cell'] ?? -1);
         $on = (bool) ($payload['on'] ?? true);
-        $marks = set_mark($game, $player, $cell, $on);
+        $result = set_mark($game, $player, $cell, $on);
 
-        json_out(['ok' => true, 'marks' => $marks]);
+        $out = ['ok' => true, 'marks' => $result['marks']];
+        if ($result['bingo'] && $result['bingo']['new'] > 0) {
+            $out['bingo'] = $result['bingo'];
+        }
+        json_out($out);
     }
 
     if ($path === '/api/bingo' && $method === 'POST') {

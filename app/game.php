@@ -236,7 +236,11 @@ function set_mark(array $game, array $player, int $cell, bool $on): array
 
     $pdo->prepare('UPDATE players SET last_seen = ? WHERE id = ?')->execute([now(), (int) $player['id']]);
 
-    return marks_of((int) $player['id']);
+    // Automatische Wertung: Ist durch diesen Haken eine Reihe vollständig,
+    // zählt das Bullshit Bingo sofort – ohne Knopfdruck.
+    $bingo = $on ? record_completed_lines($game, $player) : null;
+
+    return ['marks' => marks_of((int) $player['id']), 'bingo' => $bingo];
 }
 
 // ---------------------------------------------------------------- Reihen
@@ -297,22 +301,19 @@ function evaluate_card(array $card, array $marks, int $grid): array
     return ['best' => $best, 'total' => $grid, 'lines' => $full];
 }
 
-function record_bingo(array $game, array $player): array
+/**
+ * Wertet alle aktuell vollständigen Reihen einer Karte als Siege ein
+ * (INSERT OR IGNORE: dieselbe Linie zählt nur einmal pro Runde) und
+ * aktualisiert den Siegeszähler.
+ */
+function record_completed_lines(array $game, array $player): array
 {
-    if ($game['status'] !== 'running') {
-        return ['ok' => false, 'reason' => t('err.not_running')];
-    }
-
     $grid = (int) $game['grid'];
     $evaluation = evaluate_card(player_card($player), marks_of((int) $player['id']), $grid);
 
+    $result = ['ok' => true, 'new' => 0, 'lines' => [], 'total' => $grid];
     if (!$evaluation['lines']) {
-        return [
-            'ok'       => false,
-            'reason'   => t('err.no_line'),
-            'best'     => $evaluation['best'],
-            'total'    => $grid,
-        ];
+        return $result;
     }
 
     $pdo = db();
@@ -340,6 +341,30 @@ function record_bingo(array $game, array $player): array
         'lines' => $evaluation['lines'],
         'total' => $grid,
     ];
+}
+
+/**
+ * Manuelle Wertung (für alte Tabs mit BINGO-Knopf): validiert und delegiert.
+ */
+function record_bingo(array $game, array $player): array
+{
+    if ($game['status'] !== 'running') {
+        return ['ok' => false, 'reason' => t('err.not_running')];
+    }
+
+    $grid = (int) $game['grid'];
+    $evaluation = evaluate_card(player_card($player), marks_of((int) $player['id']), $grid);
+
+    if (!$evaluation['lines']) {
+        return [
+            'ok'       => false,
+            'reason'   => t('err.no_line'),
+            'best'     => $evaluation['best'],
+            'total'    => $grid,
+        ];
+    }
+
+    return record_completed_lines($game, $player);
 }
 
 // -------------------------------------------------------------- Aufräumen

@@ -53,8 +53,8 @@ $appConfig = [
       <?= h(t('card.best')) ?> <b id="bestNum"><?= (int) $evaluation['best'] ?></b>/<?= $grid ?>
       · <span id="markCount"><?= count($marks) ?></span> <?= h(t('card.marked')) ?>
     </div>
-    <button class="btn btn-primary btn-bingo" id="bingoBtn" type="button"><?= h(t('card.bingo')) ?></button>
   </div>
+  <p class="hint"><?= h(t('card.auto_bingo')) ?></p>
 
   <div class="toast" id="toast" hidden></div>
 </section>

@@ -216,16 +216,6 @@ p { margin: 0 0 12px; }
 .btn-small { padding: 8px 13px; font-size: .85rem; }
 .btn-big { width: 100%; padding: 15px 20px; font-size: 1rem; margin-top: 26px; }
 
-.btn-bingo {
-  font-family: var(--font-display);
-  font-weight: 560;
-  font-variation-settings: "SOFT" 40, "WONK" 1;
-  font-size: 1.3rem;
-  letter-spacing: .01em;
-  padding: 15px 32px;
-}
-.btn-bingo[disabled] { opacity: .4; cursor: not-allowed; }
-
 /* --------------------------------------------------------------- Hero */
 
 .hero { padding: clamp(18px, 4vw, 40px) 0 8px; }

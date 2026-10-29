@@ -94,7 +94,7 @@ function i18n_dictionary(): array
         'card.hint_finished'  => 'Das Spiel ist beendet. Danke fürs Mitspielen!',
         'card.best'           => 'Beste Reihe:',
         'card.marked'         => 'markiert',
-        'card.bingo'          => 'BINGO!',
+        'card.auto_bingo'     => 'Vollständige Reihen werden automatisch als Bullshit Bingo gewertet – kein Knopf nötig.',
         'card.free'           => 'FREI',
 
         // Fehler
@@ -215,7 +215,7 @@ function i18n_dictionary(): array
         'card.hint_finished'  => 'The game is over. Thanks for playing!',
         'card.best'           => 'Best line:',
         'card.marked'         => 'marked',
-        'card.bingo'          => 'BINGO!',
+        'card.auto_bingo'     => 'Completed lines are scored automatically as Bullshit Bingo – no button needed.',
         'card.free'           => 'FREE',
 
         'err.not_found'       => 'Not found',

@@ -84,20 +84,17 @@ check('Unvollständige Reihe wird abgelehnt', $early['ok'] === false, json_encod
 check('Beste Reihe ist 4/5', $early['best'] === 4, (string) $early['best']);
 
 echo "Reihe vollmachen\n";
-set_mark($game, $players['Anna'], 4, true);
+$fifth = set_mark($game, $players['Anna'], 4, true);
+check('5. Haken wertet automatisch', isset($fifth['bingo']) && $fifth['bingo']['new'] === 1, json_encode($fifth));
 $bingo = record_bingo($game, $players['Anna']);
-check('Bingo akzeptiert', $bingo['ok'] === true, json_encode($bingo));
-check('Genau eine neue Linie', $bingo['new'] === 1, (string) $bingo['new']);
-
-$again = record_bingo($game, $players['Anna']);
-check('Doppeltes Bingo zählt nicht neu', $again['ok'] === true && $again['new'] === 0);
+check('Automatik-Bingo wird nicht doppelt gezählt', $bingo['ok'] === true && $bingo['new'] === 0, json_encode($bingo));
 
 echo "Zweiter Sieger\n";
+$bertFifth = null;
 foreach ([5, 6, 7, 8, 9] as $cell) {
-    set_mark($game, $players['Bert'], $cell, true);
+    $bertFifth = set_mark($game, $players['Bert'], $cell, true);
 }
-$second = record_bingo($game, $players['Bert']);
-check('Bert gewinnt mit zweiter Reihe', $second['ok'] === true && $second['new'] === 1);
+check('Bert gewinnt mit zweiter Reihe automatisch', isset($bertFifth['bingo']) && $bertFifth['bingo']['new'] === 1, json_encode($bertFifth));
 
 $wins = game_wins((int) $game['id']);
 check('Zwei Siege protokolliert', count($wins) === 2, (string) count($wins));
@@ -188,8 +185,13 @@ db()->prepare('DELETE FROM games WHERE code = ?')->execute([$freshCode]);
 echo "Frontend-Invarianten\n";
 $css = file_get_contents(APP_ROOT . '/public/assets/style.css');
 $layout = file_get_contents(APP_ROOT . '/app/views/layout.php');
+$cardView = file_get_contents(APP_ROOT . '/app/views/card.php');
+$js = file_get_contents(APP_ROOT . '/public/assets/app.js');
 check('style.css schützt das hidden-Attribut', strpos($css, '[hidden] { display: none !important') !== false);
 check('qrcode.js hängt an appConfig.page (nicht an $page)', strpos($layout, "\$appPage === 'host'") !== false && strpos($layout, "(\$page ?? '')") === false);
+check('Kein manueller Bingo-Knopf mehr auf der Karte', strpos($cardView, 'bingoBtn') === false && strpos($js, "byId('bingoBtn')") === false);
+check('Automatik-Bingo wird gemeldet', strpos($js, "data.bingo && data.bingo.new > 0") !== false);
+check('Fremd-Siege je Key gemeldet (nicht nur der letzte)', strpos($js, 'seenOtherWins[key]') !== false);
 
 @unlink(getenv('BINGO_DB'));
 

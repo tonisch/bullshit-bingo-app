@@ -381,7 +381,6 @@
     var card = [];
     var terms = {};
     var marks = [];
-    var bingoBtn = byId('bingoBtn');
 
     function readCardFromDom() {
       card = [];
@@ -414,7 +413,6 @@
       }
       var hint = byId('hint');
       if (hint) hint.textContent = T('card.hint_' + next);
-      if (bingoBtn) bingoBtn.disabled = next !== 'running';
     }
 
     function syncCard(nextCard, nextTerms) {
@@ -450,6 +448,9 @@
         .then(function (data) {
           marks = data.marks || marks;
           paintMarks();
+          if (data.bingo && data.bingo.new > 0) {
+            toast(T('js.bingo_ok'), 'ok');
+          }
         })
         .catch(function (err) {
           marks = marks.filter(function (m) { return m !== idx; });
@@ -459,26 +460,8 @@
         });
     });
 
-    on(bingoBtn, 'click', function () {
-      if (bingoBtn) bingoBtn.disabled = true;
-      requestJson('/api/bingo', { code: APP.code })
-        .then(function (data) {
-          if (data.ok && data.new > 0) {
-            toast(T('js.bingo_ok'), 'ok');
-          } else {
-            toast(T('err.already_counted'), 'ok');
-          }
-        })
-        .catch(function (err) {
-          toast(err.message, 'error');
-        })
-        .then(function () {
-          if (bingoBtn) bingoBtn.disabled = status !== 'running';
-        });
-    });
-
     var lastCardJson = '';
-    var lastWinKey = '';
+    var seenOtherWins = {};
     var firstPoll = true;
     function loop() {
       requestJson('/api/status?code=' + encodeURIComponent(APP.code))
@@ -506,16 +489,16 @@
           }
 
           var wins = (data.wins || []).filter(function (w) { return w.round === round && w.name !== (data.me && data.me.name); });
-          if (wins.length) {
-            var last = wins[wins.length - 1];
-            var key = last.name + last.round + last.type + last.index;
+          wins.forEach(function (w) {
+            var key = w.name + '|' + w.round + '|' + w.type + '|' + w.index;
             // Nur neu gewonnene Bingos melden – nicht die beim Seitenaufruf
-            // bereits vorhandenen (sonst toast nach jedem Reload).
-            if (key !== lastWinKey) {
-              if (!firstPoll) toast(T('js.bingo_other', { name: last.name }), 'ok');
-              lastWinKey = key;
-            }
-          }
+            // bereits vorhandenen (sonst toast nach jedem Reload). Der Set
+            // statt nur des letzten Keys: mehrere Sieger im selben Poll-Intervall
+            // bleiben nicht unsichtbar.
+            if (seenOtherWins[key]) return;
+            seenOtherWins[key] = true;
+            if (!firstPoll) toast(T('js.bingo_other', { name: w.name }), 'ok');
+          });
           firstPoll = false;
         })
         .catch(function () { /* still */ })
@@ -524,7 +507,6 @@
 
     readCardFromDom();
     setStatus(status, (byId('statusBadge') || {}).textContent || '');
-    if (bingoBtn) bingoBtn.disabled = status !== 'running';
     loop();
   }
 

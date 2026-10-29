@@ -1,7 +1,8 @@
 # Bullshit Bingo
 
 Party-Bingo mit eigenen Begriffen: Host legt ein Spiel an, verteilt Code oder QR, alle
-spielen auf dem Handy. Wer zuerst eine Reihe vollhat, drückt BINGO – der Server prüft.
+spielen auf dem Handy. Wer eine Reihe vollhat, bekommt das Bullshit Bingo automatisch
+eingetragen – der Server prüft und meldet den Sieg an alle.
 
 Läuft auf dem All-Inkl-Webspace unter <https://bingo.tonisch.de>.
 Kein Framework, kein Build, keine externen Requests. PHP 8 + SQLite + Vanilla JS.
@@ -15,7 +16,10 @@ Kein Framework, kein Build, keine externen Requests. PHP 8 + SQLite + Vanilla JS
    Die Host-Ansicht zeigt QR, den Deeplink als Text und einen „Link kopieren"-Button –
    QR, Textlink und kopierter Link sind identisch.
 3. **Spielen** (`/karte`): Feld antippen, wenn der Begriff gefallen ist.
-4. **BINGO**: Server prüft Reihen/Spalten/Diagonalen, trägt den Sieg mit Zeitstempel ein.
+4. **Bullshit Bingo automatisch**: Sobald eine Reihe/Spalte/Diagonale voll ist, wertet
+   der Server beim 5. Haken – ohne Knopf. Der Sieg landet mit Zeitstempel in der
+   Historie; alle anderen Spieler sehen spätestens 2,5 s später „{name} hat Bullshit
+   Bingo!" als Toast, der Host-Beamer zeigt den Vollbild-Flash.
 5. **Host-Ansicht** (`/host/<token>`): Beamer-taugliche Liste mit Fortschritt pro Person,
    Bingos der laufenden Runde, Vollbild-Flash bei Sieg. Buttons: Start, Neue Runde, Beenden.
 

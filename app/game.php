@@ -33,14 +33,12 @@ function game_create(string $title, string $termsRaw, int $grid, bool $freeCente
     $needed = $cells - ($freeCenter ? 1 : 0);
 
     if (count($terms) < $needed) {
-        throw new UserError(sprintf(
-            'Zu wenige Begriffe: %d vorhanden, %d nötig für %dx%d%s.',
-            count($terms),
-            $needed,
-            $grid,
-            $grid,
-            $freeCenter ? ' mit freiem Mittelfeld' : ''
-        ));
+        throw new UserError(t('err.too_few_terms', [
+            'have' => count($terms),
+            'need' => $needed,
+            'grid' => $grid,
+            'free' => $freeCenter ? t('err.free_suffix') : '',
+        ]));
     }
     if (count($terms) > 300) {
         $terms = array_slice($terms, 0, 300);
@@ -60,7 +58,7 @@ function game_create(string $title, string $termsRaw, int $grid, bool $freeCente
             }
         }
         if ($code === '') {
-            throw new RuntimeException('Kein freier Spielcode gefunden.');
+            throw new RuntimeException(t('err.no_free_code'));
         }
 
         $token = random_token(24);
@@ -129,12 +127,12 @@ function player_join(array $game, string $name, string $ip): array
     $name = trim(preg_replace('/\s+/u', ' ', $name) ?? '');
     $name = preg_replace('/[\x00-\x1F\x7F]/u', '', $name) ?? '';
     if ($name === '') {
-        throw new UserError('Bitte einen Namen angeben.');
+        throw new UserError(t('err.name_required'));
     }
     $name = mb_substr($name, 0, 24);
 
     if ($game['status'] === 'finished') {
-        throw new UserError('Dieses Spiel ist bereits beendet.');
+        throw new UserError(t('err.game_finished'));
     }
 
     $pdo = db();
@@ -143,13 +141,13 @@ function player_join(array $game, string $name, string $ip): array
     $count = $pdo->prepare('SELECT COUNT(*) FROM players WHERE game_id = ?');
     $count->execute([$gameId]);
     if ((int) $count->fetchColumn() >= (int) cfg('max_players', 120)) {
-        throw new UserError('Dieses Spiel ist voll.');
+        throw new UserError(t('err.game_full'));
     }
 
     $recent = $pdo->prepare('SELECT COUNT(*) FROM joins WHERE ip = ? AND created_at > ?');
     $recent->execute([$ip, date('Y-m-d H:i:s', time() - 600)]);
     if ((int) $recent->fetchColumn() >= 25) {
-        throw new UserError('Zu viele Beitritte in kurzer Zeit. Bitte später erneut versuchen.');
+        throw new UserError(t('err.too_many_joins'));
     }
 
     $termIds = [];
@@ -205,7 +203,7 @@ function build_card(array $termIds, int $grid, bool $freeCenter): array
 {
     $needed = $grid * $grid - ($freeCenter ? 1 : 0);
     if (count($termIds) < $needed) {
-        throw new UserError('Der Begriffspool ist zu klein für dieses Spielfeld.');
+        throw new UserError(t('err.pool_small'));
     }
     shuffle($termIds);
     $card = array_slice($termIds, 0, $needed);
@@ -221,10 +219,10 @@ function set_mark(array $game, array $player, int $cell, bool $on): array
 {
     $card = player_card($player);
     if (!isset($card[$cell]) || $card[$cell] === 0) {
-        throw new UserError('Dieses Feld kann nicht markiert werden.');
+        throw new UserError(t('err.cell_locked'));
     }
     if ($game['status'] !== 'running') {
-        throw new UserError('Das Spiel läuft gerade nicht.');
+        throw new UserError(t('err.not_running'));
     }
 
     $pdo = db();
@@ -302,7 +300,7 @@ function evaluate_card(array $card, array $marks, int $grid): array
 function record_bingo(array $game, array $player): array
 {
     if ($game['status'] !== 'running') {
-        return ['ok' => false, 'reason' => 'Das Spiel läuft gerade nicht.'];
+        return ['ok' => false, 'reason' => t('err.not_running')];
     }
 
     $grid = (int) $game['grid'];
@@ -311,7 +309,7 @@ function record_bingo(array $game, array $player): array
     if (!$evaluation['lines']) {
         return [
             'ok'       => false,
-            'reason'   => 'Noch keine vollständige Reihe – weiter sammeln!',
+            'reason'   => t('err.no_line'),
             'best'     => $evaluation['best'],
             'total'    => $grid,
         ];
@@ -353,7 +351,7 @@ function host_action(array $game, string $action): array
 
     if ($action === 'start') {
         if ($game['status'] !== 'lobby') {
-            return ['ok' => false, 'reason' => 'Das Spiel wurde bereits gestartet.'];
+            return ['ok' => false, 'reason' => t('err.already_started')];
         }
         $pdo->prepare("UPDATE games SET status = 'running', started_at = ? WHERE id = ?")
             ->execute([now(), $gameId]);
@@ -362,7 +360,7 @@ function host_action(array $game, string $action): array
 
     if ($action === 'next') {
         if ($game['status'] !== 'running') {
-            return ['ok' => false, 'reason' => 'Nur in einer laufenden Runde möglich.'];
+            return ['ok' => false, 'reason' => t('err.not_running_round')];
         }
         $termIds = [];
         foreach (game_terms($gameId) as $term) {
@@ -396,7 +394,7 @@ function host_action(array $game, string $action): array
         return ['ok' => true];
     }
 
-    return ['ok' => false, 'reason' => 'Unbekannte Aktion.'];
+    return ['ok' => false, 'reason' => t('err.unknown_action')];
 }
 
 function game_wins(int $gameId, ?int $round = null): array

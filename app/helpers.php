@@ -94,7 +94,7 @@ function csrf_ok($token): bool
 function csrf_require($token): void
 {
     if (!csrf_ok($token)) {
-        throw new UserError('Ungültiges Formular-Token. Bitte Seite neu laden.');
+        throw new UserError(t('err.bad_token'));
     }
 }
 

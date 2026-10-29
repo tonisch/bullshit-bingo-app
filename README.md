@@ -20,20 +20,36 @@ Kein Framework, kein Build, keine externen Requests. PHP 8 + SQLite + Vanilla JS
 „Neue Runde" mischt alle Karten neu und löscht die Markierungen; Siege bleiben in der
 Historie erhalten.
 
+## Sprachen
+
+Die Oberfläche ist zweisprachig (Deutsch/Englisch). Umgeschaltet wird über die Links
+`DE` / `EN` oben rechts (`/lang/de`, `/lang/en`), gespeichert in einem Cookie für ein Jahr.
+Ohne Cookie entscheidet `Accept-Language`, Default ist Deutsch. Alle Texte stehen in
+`app/i18n.php`; das Frontend bekommt die Strings als `window.APP.i18n` und greift über
+`T('key')` darauf zu.
+
 ## Wortlisten
 
-`app/wordlists.php` enthält vier Presets, die auf `/neu` als Chips erscheinen:
+`app/wordlists.php` enthält vier englische Presets, die auf `/neu` als Chips erscheinen:
 
 | ID | Liste | Begriffe | Inhalt |
 |----|-------|----------|--------|
-| `automotive` | Automotive Management | 40 | ASPICE, ISO 26262, SOP, Lenkungskreis, Change Board |
-| `meeting` | Meeting-Bingo | 30 | Klassiker aus jedem Jour fixe |
-| `quality` | Qualität & Zulieferer | 28 | 8D, PPAP, Feldrückläufer, Cpk |
-| `tech` | Technik (light) | 24 | OTA, DTC, AUTOSAR, Prüfstand |
+| `automotive` | Automotive management | 40 | ASPICE, ISO 26262, SOP, steering committee, change board |
+| `meeting` | Meeting bingo | 30 | Klassiker aus jedem Jour fixe |
+| `quality` | Quality & suppliers | 28 | 8D report, PPAP, field return, Cpk |
+| `tech` | Tech (light) | 24 | Over-the-air, DTC, AUTOSAR, test bench |
 
 Ein Klick ergänzt die Begriffe im Textfeld, Dubletten werden übersprungen; mehrere
-Listen lassen sich kombinieren. Neue Listen sind einfach weitere Einträge in
-`wordlist_packs()`.
+Listen lassen sich kombinieren. Beschriftungen kommen aus der i18n-Schicht, die Begriffe
+selbst sind sprachneutral englisch gehalten.
+
+## Gestaltung
+
+Typografie und Palette folgen Alfred (dort ADR-0005): **Fraunces Variable** für
+Schlagzeilen, **Inter Tight Variable** für UI-Elemente, **Inter Variable** für Fließtext.
+Alle drei Familien liegen selbst gehostet in `public/assets/fonts/` – keine Requests zu
+einem Font-CDN. Akzentfarbe `#005a9d`, Linien in Slate `#556677`, heller Grund,
+Signatur-Band oben (1 px Slate / 2 px Blau / 1 px Slate).
 
 ## Realtime
 
@@ -47,16 +63,21 @@ Spieler:innen problemlos; bei deutlich mehr Teilnehmenden das Intervall erhöhen
 app/
   bootstrap.php   Konfiguration, Session, Fehlerbehandlung
   helpers.php     Ausgabe-Escaping, CSRF, Zufallscodes, View-Rendering
-  wordlists.php   Preset-Wortlisten für /neu
+  i18n.php        Wörterbuch DE/EN, Sprachwahl, t()
   db.php          PDO-SQLite + Schema (CREATE TABLE IF NOT EXISTS)
   game.php        Spiellogik: anlegen, beitreten, markieren, Bingo prüfen, Runden
+  wordlists.php   Preset-Wortlisten für /neu
   views/          Layout + Seiten
 public/           Document Root (index.php = Front-Controller, assets/)
+  assets/fonts/   Fraunces, Inter Tight, Inter (woff2, self-hosted)
 bin/
   test.php        End-to-End-Test der Spiellogik ohne Webserver
   console.php     Spiele auflisten / löschen / aufräumen
 var/bingo.sqlite  Datenbank (außerhalb des Document Root)
 ```
+
+Assets werden mit `?v=<filemtime>` ausgeliefert – nach einem Deployment sehen Browser
+automatisch die neue Version, ohne Hard-Reload.
 
 ## Datenmodell
 
@@ -79,7 +100,7 @@ var/bingo.sqlite  Datenbank (außerhalb des Document Root)
 ## Entwicklung
 
 ```bash
-php bin/test.php          # Spiellogik durchtesten (eigene Wegwerf-DB)
+php bin/test.php                  # Spiellogik durchtesten (eigene Wegwerf-DB)
 php -S localhost:8000 -t public   # lokal spielen
 ```
 
@@ -104,3 +125,7 @@ php bin/console.php cleanup 30
 
 Backup: einfach `var/bingo.sqlite` kopieren (im WAL-Modus zusätzlich `-wal`/`-shm`
 oder vorher `PRAGMA wal_checkpoint(TRUNCATE)`).
+
+## Lizenz
+
+MIT, siehe `LICENSE`.

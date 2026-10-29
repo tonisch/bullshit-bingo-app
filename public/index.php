@@ -17,16 +17,16 @@ try {
         json_out(['ok' => false, 'error' => $e->getMessage()], 400);
     }
     http_response_code(400);
-    view('error', ['title' => 'Das ging nicht', 'message' => $e->getMessage()]);
+    view('error', ['title' => t('err.no_terms'), 'message' => $e->getMessage()]);
 } catch (Throwable $e) {
     error_log('bingo: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     if (wants_json()) {
-        json_out(['ok' => false, 'error' => 'Serverfehler'], 500);
+        json_out(['ok' => false, 'error' => t('err.server')], 500);
     }
     http_response_code(500);
     view('error', [
-        'title'   => 'Serverfehler',
-        'message' => cfg('debug') ? $e->getMessage() : 'Da ist etwas schiefgelaufen. Bitte später erneut versuchen.',
+        'title'   => t('err.server'),
+        'message' => cfg('debug') ? $e->getMessage() : t('err.server_msg'),
     ]);
 }
 
@@ -37,6 +37,16 @@ function dispatch(string $method, string $path): void
     if ($path === '/' && $method === 'GET') {
         view('home', ['title' => 'Bullshit Bingo', 'game' => session_game()]);
         return;
+    }
+
+    if (preg_match('#^/lang/(de|en)$#', $path, $m) && $method === 'GET') {
+        lang_set($m[1]);
+        $back = (string) ($_SERVER['HTTP_REFERER'] ?? '/');
+        $target = parse_url($back, PHP_URL_HOST);
+        if (!$target || strcasecmp($target, (string) ($_SERVER['HTTP_HOST'] ?? '')) !== 0) {
+            $back = '/';
+        }
+        redirect($back);
     }
 
     if ($path === '/neu' && $method === 'GET') {
@@ -65,7 +75,7 @@ function dispatch(string $method, string $path): void
         csrf_require($_POST['csrf'] ?? null);
         $game = game_by_code((string) ($_POST['code'] ?? ''));
         if (!$game) {
-            throw new UserError('Diesen Spielcode gibt es nicht.');
+            throw new UserError(t('err.game_not_found'));
         }
         $player = player_join($game, (string) ($_POST['name'] ?? ''), client_ip());
         $_SESSION['player'] = ['token' => $player['token'], 'game' => $game['code']];
@@ -90,7 +100,7 @@ function dispatch(string $method, string $path): void
     if (preg_match('#^/host/([a-f0-9]{48})$#', $path, $m) && $method === 'GET') {
         $game = game_by_token($m[1]);
         if (!$game) {
-            throw new UserError('Dieser Host-Link ist ungültig.');
+            throw new UserError(t('err.host_link'));
         }
         $_SESSION['host'][$game['code']] = $game['admin_token'];
         view('host', [
@@ -106,11 +116,11 @@ function dispatch(string $method, string $path): void
         csrf_require($_POST['csrf'] ?? null);
         $game = game_by_token($m[1]);
         if (!$game) {
-            throw new UserError('Dieser Host-Link ist ungültig.');
+            throw new UserError(t('err.host_link'));
         }
         $result = host_action($game, (string) ($_POST['action'] ?? ''));
         if (!$result['ok']) {
-            throw new UserError((string) ($result['reason'] ?? 'Aktion fehlgeschlagen.'));
+            throw new UserError((string) ($result['reason'] ?? t('err.action_failed')));
         }
         redirect('/host/' . $m[1]);
     }
@@ -118,7 +128,7 @@ function dispatch(string $method, string $path): void
     if ($path === '/api/status' && $method === 'GET') {
         $game = game_by_code((string) ($_GET['code'] ?? ''));
         if (!$game) {
-            json_out(['ok' => false, 'error' => 'Spiel nicht gefunden'], 404);
+            json_out(['ok' => false, 'error' => t('err.game_not_found')], 404);
         }
         $admin = isset($_GET['admin'])
             && is_string($_GET['admin'])
@@ -126,7 +136,7 @@ function dispatch(string $method, string $path): void
 
         $player = $admin ? null : current_player($game);
         if (!$admin && !$player) {
-            json_out(['ok' => false, 'error' => 'Nicht für dieses Spiel angemeldet'], 403);
+            json_out(['ok' => false, 'error' => t('err.not_signed_in')], 403);
         }
 
         json_out(['ok' => true] + status_payload($game, $player, $admin));
@@ -139,7 +149,7 @@ function dispatch(string $method, string $path): void
         $game = game_by_code((string) ($payload['code'] ?? ''));
         $player = $game ? current_player($game) : null;
         if (!$game || !$player) {
-            json_out(['ok' => false, 'error' => 'Nicht angemeldet'], 403);
+            json_out(['ok' => false, 'error' => t('err.not_signed_in')], 403);
         }
 
         $cell = (int) ($payload['cell'] ?? -1);
@@ -156,14 +166,14 @@ function dispatch(string $method, string $path): void
         $game = game_by_code((string) ($payload['code'] ?? ''));
         $player = $game ? current_player($game) : null;
         if (!$game || !$player) {
-            json_out(['ok' => false, 'error' => 'Nicht angemeldet'], 403);
+            json_out(['ok' => false, 'error' => t('err.not_signed_in')], 403);
         }
 
-        json_out(['ok' => true] + record_bingo($game, $player));
+        json_out(array_merge(['ok' => true], record_bingo($game, $player)));
     }
 
     http_response_code(404);
-    view('error', ['title' => 'Nicht gefunden', 'message' => 'Diese Seite gibt es nicht.']);
+    view('error', ['title' => t('err.not_found'), 'message' => t('err.not_found_msg')]);
 }
 
 // ---------------------------------------------------------------- Helfer
@@ -184,7 +194,7 @@ function header_token_check(): void
 {
     $token = $_SERVER['HTTP_X_CSRF'] ?? null;
     if (!csrf_ok($token)) {
-        json_out(['ok' => false, 'error' => 'Sitzung abgelaufen, bitte neu laden.'], 419);
+        json_out(['ok' => false, 'error' => t('js.session_expired')], 419);
     }
 }
 

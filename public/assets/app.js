@@ -4,6 +4,17 @@
   var APP = window.APP || {};
   var csrfMeta = document.querySelector('meta[name="csrf"]');
   var csrf = csrfMeta ? csrfMeta.content : '';
+  var I18N = APP.i18n || {};
+
+  function T(key, vars) {
+    var text = I18N[key] || key;
+    if (vars) {
+      Object.keys(vars).forEach(function (name) {
+        text = text.replace(new RegExp('\\{' + name + '\\}', 'g'), String(vars[name]));
+      });
+    }
+    return text;
+  }
   var pollMs = Math.max(1000, APP.poll || 2500);
 
   function byId(id) { return document.getElementById(id); }
@@ -24,7 +35,7 @@
     return fetch(path, opts).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (!res.ok || data.ok === false) {
-          throw new Error(data.error || 'Da ist etwas schiefgelaufen.');
+          throw new Error(data.error || data.reason || T('js.error'));
         }
         return data;
       });
@@ -82,7 +93,7 @@
     function update() {
       var count = uniqueLines().length;
       var need = needed();
-      counter.textContent = count + ' Begriffe · ' + need + ' nötig';
+      counter.textContent = T('create.counter', { count: count, need: need });
       counter.className = 'counter ' + (count < need ? 'warn' : 'good');
     }
 
@@ -113,8 +124,8 @@
       terms.value = current.join('\n');
       update();
       hint(added > 0
-        ? pack.label + ': ' + added + ' Begriffe ergänzt (' + current.length + ' gesamt).'
-        : pack.label + ' war komplett schon drin.', added > 0 ? 'good' : '');
+        ? T('create.pack_added', { label: pack.label, count: added, total: current.length })
+        : T('create.pack_present', { label: pack.label }), added > 0 ? 'good' : '');
     }
 
     Array.prototype.forEach.call(document.querySelectorAll('.chip[data-pack]'), function (chip) {
@@ -126,7 +137,7 @@
     on(byId('clearTerms'), 'click', function () {
       terms.value = '';
       update();
-      hint('Liste geleert.', '');
+      hint(T('create.cleared'), '');
       terms.focus();
     });
 
@@ -207,7 +218,6 @@
     var flash = byId('winFlash');
     var flashName = byId('winFlashName');
 
-    var statusLabels = { lobby: 'Warteraum', running: 'läuft', finished: 'beendet' };
     var seenWins = {};
     var firstRender = true;
 
@@ -233,7 +243,7 @@
 
     function showFlash(name) {
       if (!flash || !flashName) return;
-      flashName.textContent = name + ' hat BINGO!';
+      flashName.textContent = T('host.win_flash', { name: name });
       flash.hidden = false;
       setTimeout(function () { flash.hidden = true; }, 2600);
     }
@@ -314,7 +324,7 @@
     function render(data) {
       var game = data.game || {};
       if (badge) {
-        badge.textContent = statusLabels[game.status] || game.status;
+        badge.textContent = T('status.' + game.status);
         badge.className = 'badge badge-' + game.status;
       }
       page.dataset.status = game.status;
@@ -379,11 +389,7 @@
         badge.className = 'badge badge-' + next;
       }
       var hint = byId('hint');
-      if (hint) {
-        if (next === 'lobby') hint.textContent = 'Warte auf den Start. Deine Karte siehst du schon – tippen geht gleich los.';
-        else if (next === 'finished') hint.textContent = 'Das Spiel ist beendet. Danke fürs Mitspielen!';
-        else hint.textContent = 'Tippe ein Feld an, sobald der Begriff gefallen ist.';
-      }
+      if (hint) hint.textContent = T('card.hint_' + next);
       if (bingoBtn) bingoBtn.disabled = next !== 'running';
     }
 
@@ -399,7 +405,7 @@
       if (!cell || cell.classList.contains('cell-free')) return;
 
       if (status !== 'running') {
-        toast('Das Spiel läuft gerade nicht.');
+        toast(T('js.not_running'));
         return;
       }
 
@@ -428,9 +434,9 @@
       requestJson('/api/bingo', { code: APP.code })
         .then(function (data) {
           if (data.ok && data.new > 0) {
-            toast('BINGO! Der Host sieht dich jetzt.', 'ok');
+            toast(T('js.bingo_ok'), 'ok');
           } else {
-            toast('Bingo war schon gewertet.', 'ok');
+            toast(T('err.already_counted'), 'ok');
           }
         })
         .catch(function (err) {
@@ -447,14 +453,14 @@
       requestJson('/api/status?code=' + encodeURIComponent(APP.code))
         .then(function (data) {
           var game = data.game || {};
-          if (game.status !== status) setStatus(game.status, { lobby: 'Warteraum', running: 'läuft', finished: 'beendet' }[game.status] || game.status);
+          if (game.status !== status) setStatus(game.status, T('status.' + game.status));
 
           if (game.round !== round) {
             round = game.round;
             var rn = byId('roundNum');
             if (rn) rn.textContent = round;
             marks = [];
-            toast('Neue Runde – neue Karte!', 'ok');
+            toast(T('js.new_round'), 'ok');
           }
 
           if (data.me) {
@@ -474,7 +480,7 @@
             var key = last.name + last.round + last.type + last.index;
             if (key !== lastWinKey) {
               lastWinKey = key;
-              toast(last.name + ' hat BINGO!', 'ok');
+              toast(T('js.bingo_other', { name: last.name }), 'ok');
             }
           }
         })

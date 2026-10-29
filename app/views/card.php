@@ -15,32 +15,23 @@ $appConfig = [
     'grid'  => $grid,
     'poll'  => (int) cfg('poll_ms', 2500),
 ];
-$statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'beendet'];
 ?>
 
 <section class="card-page" id="cardPage" data-status="<?= h($game['status']) ?>" data-round="<?= (int) $game['round'] ?>">
   <header class="card-head">
     <div>
-      <span class="muted"><?= h($game['title']) ?></span>
+      <span><?= h($game['title']) ?></span>
       <strong><?= h($player['name']) ?></strong>
     </div>
     <div class="meta">
       <span class="badge badge-<?= h($game['status']) ?>" id="statusBadge">
-        <?= h($statusLabels[$game['status']] ?? $game['status']) ?>
+        <?= h(t('status.' . $game['status'])) ?>
       </span>
-      <span>Runde <b id="roundNum"><?= (int) $game['round'] ?></b></span>
+      <span><?= h(t('host.round')) ?> <b id="roundNum"><?= (int) $game['round'] ?></b></span>
     </div>
   </header>
 
-  <p class="hint" id="hint">
-    <?php if ($game['status'] === 'lobby'): ?>
-      Warte auf den Start. Deine Karte siehst du schon – tippen geht gleich los.
-    <?php elseif ($game['status'] === 'finished'): ?>
-      Das Spiel ist beendet. Danke fürs Mitspielen!
-    <?php else: ?>
-      Tippe ein Feld an, sobald der Begriff gefallen ist.
-    <?php endif; ?>
-  </p>
+  <p class="hint" id="hint"><?= h(t('card.hint_' . $game['status'])) ?></p>
 
   <div class="board" id="board" style="--grid: <?= $grid ?>">
     <?php foreach ($card as $idx => $termId): ?>
@@ -52,17 +43,17 @@ $statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'b
               class="cell<?= $isFree ? ' cell-free' : '' ?><?= $isOn ? ' is-marked' : '' ?>"
               data-idx="<?= (int) $idx ?>"
               <?= $isFree ? 'disabled' : '' ?>>
-        <span class="cell-text"><?= $isFree ? 'FREI' : h($terms[$termId] ?? '?') ?></span>
+        <span class="cell-text"><?= $isFree ? h(t('card.free')) : h($terms[$termId] ?? '?') ?></span>
       </button>
     <?php endforeach; ?>
   </div>
 
   <div class="card-foot">
     <div class="progress" id="progress">
-      Beste Reihe: <b id="bestNum"><?= (int) $evaluation['best'] ?></b>/<?= $grid ?>
-      · <span id="markCount"><?= count($marks) ?></span> markiert
+      <?= h(t('card.best')) ?> <b id="bestNum"><?= (int) $evaluation['best'] ?></b>/<?= $grid ?>
+      · <span id="markCount"><?= count($marks) ?></span> <?= h(t('card.marked')) ?>
     </div>
-    <button class="btn btn-primary btn-bingo" id="bingoBtn" type="button">BINGO!</button>
+    <button class="btn btn-primary btn-bingo" id="bingoBtn" type="button"><?= h(t('card.bingo')) ?></button>
   </div>
 
   <div class="toast" id="toast" hidden></div>

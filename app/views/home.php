@@ -1,27 +1,27 @@
 <?php /** @var array|null $game */ ?>
 
 <section class="hero">
-  <h1>Bullshit Bingo.<br><span>Aber mit Begriffen, die wirklich fallen.</span></h1>
-  <p class="lead">
-    Spiel anlegen, Begriffszettel reinkopieren, Code oder QR verteilen – jeder bekommt eine
-    eigene Karte. Wer zuerst eine Reihe vollhat, drückt BINGO.
-  </p>
+  <h1>
+    <?= h(t('home.title')) ?>
+    <span><?= h(t('home.subtitle')) ?></span>
+  </h1>
+  <p class="lead"><?= h(t('home.lead')) ?></p>
 
   <div class="cta">
-    <a class="btn btn-primary" href="/neu">Spiel anlegen</a>
-    <a class="btn" href="/beitreten">Ich habe einen Code</a>
+    <a class="btn btn-primary" href="/neu"><?= h(t('home.cta.create')) ?></a>
+    <a class="btn" href="/beitreten"><?= h(t('home.cta.join')) ?></a>
   </div>
 
   <?php if ($game): ?>
     <div class="resume">
       <div>
-        <strong>Laufendes Spiel:</strong> <?= h($game['title']) ?>
-        <span class="muted">· Code <?= h($game['code']) ?> · <?= h($game['status']) ?></span>
+        <strong><?= h(t('home.resume')) ?></strong> <?= h($game['title']) ?>
+        <span class="muted">· <?= h(t('host.code')) ?> <?= h($game['code']) ?> · <?= h(t('status.' . $game['status'])) ?></span>
       </div>
       <div class="resume-actions">
-        <a class="btn btn-small" href="/karte">Karte öffnen</a>
+        <a class="btn btn-small" href="/karte"><?= h(t('home.resume.card')) ?></a>
         <?php if (!empty($_SESSION['host'][$game['code']])): ?>
-          <a class="btn btn-small" href="/host/<?= h($_SESSION['host'][$game['code']]) ?>">Host-Ansicht</a>
+          <a class="btn btn-small btn-ghost" href="/host/<?= h($_SESSION['host'][$game['code']]) ?>"><?= h(t('home.resume.host')) ?></a>
         <?php endif; ?>
       </div>
     </div>
@@ -29,19 +29,11 @@
 </section>
 
 <section class="steps">
-  <article>
-    <span class="num">1</span>
-    <h2>Begriffe rein</h2>
-    <p>Eine Liste, ein Begriff pro Zeile – Klassiker wie „Synergie“ oder „wir müssen da mal drüber“. Mindestens 24 für ein 5×5-Feld, mehr ist besser: dann ist jede Karte anders.</p>
-  </article>
-  <article>
-    <span class="num">2</span>
-    <h2>Code verteilen</h2>
-    <p>Jeder tritt mit sechsstelligem Code oder QR bei und bekommt eine zufällig gemischte Karte aufs Handy.</p>
-  </article>
-  <article>
-    <span class="num">3</span>
-    <h2>Bingo</h2>
-    <p>Gehörtes Feld antippen. Der Server prüft die Reihe und trägt den Sieger live in die Beamer-Ansicht ein.</p>
-  </article>
+  <?php for ($step = 1; $step <= 3; $step++): ?>
+    <article>
+      <span class="num">0<?= $step ?></span>
+      <h2><?= h(t('home.step' . $step . '.title')) ?></h2>
+      <p><?= h(t('home.step' . $step . '.text')) ?></p>
+    </article>
+  <?php endfor; ?>
 </section>

@@ -15,6 +15,7 @@ $GLOBALS['CFG'] = [
 ];
 
 require APP_ROOT . '/app/helpers.php';
+require APP_ROOT . '/app/i18n.php';
 require APP_ROOT . '/app/db.php';
 require APP_ROOT . '/app/game.php';
 require APP_ROOT . '/app/wordlists.php';

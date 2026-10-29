@@ -10,7 +10,6 @@ $appConfig = [
     'admin' => $game['admin_token'],
     'poll'  => (int) cfg('poll_ms', 2500),
 ];
-$statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'beendet'];
 ?>
 
 <section class="host">
@@ -19,11 +18,11 @@ $statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'b
       <h1><?= h($game['title']) ?></h1>
       <div class="meta">
         <span class="badge badge-<?= h($game['status']) ?>" id="statusBadge">
-          <?= h($statusLabels[$game['status']] ?? $game['status']) ?>
+          <?= h(t('status.' . $game['status'])) ?>
         </span>
-        <span>Runde <b id="roundNum"><?= (int) $game['round'] ?></b></span>
-        <span>Code <b class="code" id="gameCode"><?= h($game['code']) ?></b></span>
-        <span><b id="playerCount"><?= count($progress) ?></b> Spieler:innen</span>
+        <span><?= h(t('host.round')) ?> <b id="roundNum"><?= (int) $game['round'] ?></b></span>
+        <span><?= h(t('host.code')) ?> <b class="code" id="gameCode"><?= h($game['code']) ?></b></span>
+        <span><b id="playerCount"><?= count($progress) ?></b> <?= h(t('host.players_count')) ?></span>
       </div>
     </div>
     <div class="qr-box">
@@ -36,35 +35,41 @@ $statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'b
     <form method="post" action="/host/<?= $token ?>/aktion">
       <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
       <input type="hidden" name="action" value="start">
-      <button class="btn btn-primary" type="submit">Spiel starten</button>
+      <button class="btn btn-primary" type="submit"><?= h(t('host.start')) ?></button>
     </form>
     <form method="post" action="/host/<?= $token ?>/aktion">
       <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
       <input type="hidden" name="action" value="next">
-      <button class="btn" type="submit">Neue Runde (Karten neu mischen)</button>
+      <button class="btn" type="submit"><?= h(t('host.next')) ?></button>
     </form>
     <form method="post" action="/host/<?= $token ?>/aktion"
-          onsubmit="return confirm('Spiel beenden? Niemand kann danach noch mitspielen.');">
+          onsubmit="return confirm(<?= h(json_encode(t('host.confirm_finish'), JSON_UNESCAPED_UNICODE)) ?>);">
       <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
       <input type="hidden" name="action" value="finish">
-      <button class="btn btn-ghost" type="submit">Beenden</button>
+      <button class="btn btn-ghost" type="submit"><?= h(t('host.finish')) ?></button>
     </form>
-    <a class="btn btn-ghost" href="/host/<?= $token ?>">Aktualisieren</a>
+    <a class="btn btn-ghost" href="/host/<?= $token ?>"><?= h(t('host.refresh')) ?></a>
   </div>
 
   <div class="host-grid">
     <section class="panel">
-      <h2>Spieler</h2>
+      <h2><?= h(t('host.players')) ?></h2>
       <table class="players">
         <thead>
-          <tr><th>#</th><th>Name</th><th>Markiert</th><th>Beste Reihe</th><th>Bingos</th></tr>
+          <tr>
+            <th><?= h(t('host.col_no')) ?></th>
+            <th><?= h(t('host.col_name')) ?></th>
+            <th><?= h(t('host.col_marks')) ?></th>
+            <th><?= h(t('host.col_best')) ?></th>
+            <th><?= h(t('host.col_bingos')) ?></th>
+          </tr>
         </thead>
         <tbody id="playersBody">
         <?php foreach ($progress as $i => $p): ?>
           <tr>
             <td class="muted"><?= $i + 1 ?></td>
             <td><?= h($p['name']) ?></td>
-            <td><?= (int) $p['marks'] ?></td>
+            <td class="mono-figures"><?= (int) $p['marks'] ?></td>
             <td>
               <span class="bar"><span style="width: <?= (int) round($p['best'] / max(1, $p['total']) * 100) ?>%"></span></span>
               <?= (int) $p['best'] ?>/<?= (int) $p['total'] ?>
@@ -74,24 +79,24 @@ $statusLabels = ['lobby' => 'Warteraum', 'running' => 'läuft', 'finished' => 'b
         <?php endforeach; ?>
         </tbody>
       </table>
-      <p class="muted" id="emptyHint" <?= $progress ? 'hidden' : '' ?>>Noch niemand dabei. Code oder QR teilen.</p>
+      <p class="muted" id="emptyHint" <?= $progress ? 'hidden' : '' ?>><?= h(t('host.empty')) ?></p>
     </section>
 
     <section class="panel">
-      <h2>Bingos <span class="muted">(diese Runde)</span></h2>
+      <h2><?= h(t('host.bingos')) ?> <span class="muted"><?= h(t('host.this_round')) ?></span></h2>
       <ol class="wins" id="winsList">
         <?php foreach ($wins as $w): ?>
           <?php if ((int) $w['round'] !== (int) $game['round']) { continue; } ?>
           <li><b><?= h($w['name']) ?></b> <span class="muted"><?= h($w['time']) ?> · <?= h($w['type']) ?> <?= (int) $w['index'] + 1 ?></span></li>
         <?php endforeach; ?>
       </ol>
-      <p class="muted" id="noWinsHint">Noch kein Bingo.</p>
+      <p class="muted" id="noWinsHint"><?= h(t('host.no_wins')) ?></p>
     </section>
   </div>
 
   <div class="flash-overlay" id="winFlash" hidden>
     <div class="flash-inner">
-      <span class="flash-kicker">BINGO</span>
+      <span class="flash-kicker"><?= h(t('card.bingo')) ?></span>
       <strong id="winFlashName"></strong>
     </div>
   </div>

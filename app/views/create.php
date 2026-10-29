@@ -4,53 +4,49 @@ $appConfig = ['page' => 'create', 'packs' => $packs];
 ?>
 
 <section class="panel narrow">
-  <h1>Neues Spiel anlegen</h1>
-  <p class="muted">Du bekommst danach einen Host-Link – den nicht rausgeben, damit niemand die Runden steuert.</p>
+  <h1><?= h(t('create.title')) ?></h1>
+  <p class="muted"><?= h(t('create.note')) ?></p>
 
   <form method="post" action="/neu" id="createForm">
     <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
 
-    <label for="title">Titel <span class="muted">(optional)</span></label>
-    <input type="text" id="title" name="title" maxlength="80" placeholder="z. B. Montags-All-Hands">
+    <label for="title"><?= h(t('create.title_label')) ?> <span class="muted"><?= h(t('create.optional')) ?></span></label>
+    <input type="text" id="title" name="title" maxlength="80" placeholder="<?= h(t('create.title_ph')) ?>">
 
-    <label for="terms">Begriffe – einer pro Zeile</label>
+    <label for="terms"><?= h(t('create.terms_label')) ?></label>
 
     <div class="packs" id="packs">
-      <span class="packs-label">Wortlisten</span>
+      <span class="packs-label"><?= h(t('create.packs')) ?></span>
       <?php foreach ($packs as $id => $pack): ?>
-        <button type="button" class="chip" data-pack="<?= h($id) ?>"
-                title="<?= h($pack['hint']) ?>">
+        <button type="button" class="chip" data-pack="<?= h($id) ?>">
           <?= h($pack['label']) ?>
           <span class="chip-count"><?= count($pack['terms']) ?></span>
         </button>
       <?php endforeach; ?>
-      <button type="button" class="chip chip-ghost" id="clearTerms">Leeren</button>
+      <button type="button" class="chip chip-ghost" id="clearTerms"><?= h(t('create.clear')) ?></button>
     </div>
-    <p class="packs-hint" id="packHint">
-      Klick eine Liste an – ihre Begriffe werden eingefügt. Mehrere Listen lassen sich mischen.
-    </p>
+    <p class="packs-hint" id="packHint"><?= h(t('create.hint')) ?></p>
 
-    <textarea id="terms" name="terms" rows="12" required
-      placeholder="Synergieeffekte&#10;Lass uns das mal parken&#10;Ich sehe da keine Blocker&#10;…"></textarea>
-    <div class="counter" id="termCounter">0 Begriffe</div>
+    <textarea id="terms" name="terms" rows="12" required placeholder="<?= h(t('create.terms_ph')) ?>"></textarea>
+    <div class="counter" id="termCounter"><?= h(t('create.counter', ['count' => 0, 'need' => 24])) ?></div>
 
     <div class="row">
       <div>
-        <label for="grid">Raster</label>
+        <label for="grid"><?= h(t('create.grid')) ?></label>
         <select id="grid" name="grid">
-          <option value="5" selected>5 × 5 (24 Begriffe)</option>
-          <option value="4">4 × 4 (15 Begriffe)</option>
-          <option value="3">3 × 3 (8 Begriffe)</option>
+          <option value="5" selected><?= h(t('create.grid5')) ?></option>
+          <option value="4"><?= h(t('create.grid4')) ?></option>
+          <option value="3"><?= h(t('create.grid3')) ?></option>
         </select>
       </div>
       <div class="checkline">
         <label class="check">
           <input type="checkbox" id="free_center" name="free_center" value="1" checked>
-          <span>Freies Mittelfeld</span>
+          <span><?= h(t('create.free_center')) ?></span>
         </label>
       </div>
     </div>
 
-    <button class="btn btn-primary btn-big" type="submit">Spiel erzeugen</button>
+    <button class="btn btn-primary btn-big" type="submit"><?= h(t('create.submit')) ?></button>
   </form>
 </section>
